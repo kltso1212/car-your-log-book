@@ -12,6 +12,7 @@
         public int Type { get; set; } = 1;
         public ICollection<FuelRecord> FuelRecords { get; set; } = [];
         public ICollection<ChargeRecord> ChargeRecords { get; set; } = [];
+        public ICollection<TunnelRecord> TunnelRecords { get; set; } = [];
         public Vehicle() { }
         public Vehicle(VehicleDto data)
         {

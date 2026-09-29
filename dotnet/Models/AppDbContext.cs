@@ -8,6 +8,7 @@ namespace dotnet.Models
         public virtual DbSet<Vehicle> Vehicles { get; set; }
         public virtual DbSet<FuelRecord> FuelRecords { get; set; }
         public virtual DbSet<ChargeRecord> ChargeRecords { get; set; }
+        public virtual DbSet<TunnelRecord> TunnelRecords { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Vehicle>(entity =>
@@ -65,6 +66,29 @@ namespace dotnet.Models
                 entity.HasIndex(e => new { e.VehicleId, e.Odm }).IsUnique();
 
                 entity.ToTable("charge_records");
+            });
+
+            modelBuilder.Entity<TunnelRecord>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id).HasColumnType("INTEGER").HasColumnName("id")
+                    .ValueGeneratedOnAdd();
+                entity.Property(e => e.Date).HasColumnType("TEXT").HasColumnName("date");
+                entity.Property(e => e.Tunnel).HasColumnType("INTEGER").HasColumnName("tunnel");
+                entity.Property(e => e.Bound).HasColumnType("INTEGER").HasColumnName("bound");
+                entity.Property(e => e.Fee).HasColumnType("REAL").HasColumnName("fee");
+                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+
+                entity.HasOne(e => e.Vehicle)
+                    .WithMany(v => v.TunnelRecords)
+                    .HasForeignKey(e => e.VehicleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // No UNIQUE constraint: same tunnel twice a day is normal.
+                entity.HasIndex(e => new { e.VehicleId, e.Date });
+
+                entity.ToTable("tunnel_records");
             });
 
             base.OnModelCreating(modelBuilder);

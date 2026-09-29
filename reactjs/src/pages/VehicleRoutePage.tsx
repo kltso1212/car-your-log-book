@@ -6,6 +6,7 @@ import { Page, pageIndexFromSlug, pageSlugs, isSlugForVehicle, defaultSlugForVeh
 import { vehicleTypeOf } from '../types/Vehicle';
 import FuelRecordPage from './FuelRecordPage';
 import ChargePage from './ChargePage';
+import TunnelPage from './TunnelPage';
 import SummaryPage from './SummaryPage';
 import ComingSoonPage from './ComingSoonPage';
 
@@ -55,6 +56,8 @@ export default function VehicleRoutePage() {
         <FuelRecordPage />
       ) : slug === 'charge' ? (
         <ChargePage />
+      ) : slug === 'tunnel' ? (
+        <TunnelPage />
       ) : slug === 'summary' ? (
         <SummaryPage />
       ) : (

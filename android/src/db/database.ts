@@ -5,7 +5,7 @@ import * as SQLite from 'expo-sqlite';
 // (vehicles / fuel_records + surrogate id + UNIQUE(vehicle_id, odm)).
 
 const DB_NAME = 'fuel.db';
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 let db: SQLite.SQLiteDatabase | null = null;
 
@@ -47,6 +47,16 @@ export async function ensureMigrated(database: SQLite.SQLiteDatabase): Promise<v
         price REAL NOT NULL DEFAULT 0,
         UNIQUE (vehicle_id, odm)
       );
+      CREATE TABLE IF NOT EXISTS tunnel_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        tunnel INTEGER NOT NULL,
+        bound INTEGER NOT NULL,
+        fee REAL NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS idx_tunnel_vehicle_date
+        ON tunnel_records (vehicle_id, date);
     `);
   }
   if (version < 2) {
@@ -83,6 +93,21 @@ export async function ensureMigrated(database: SQLite.SQLiteDatabase): Promise<v
         price REAL NOT NULL DEFAULT 0,
         UNIQUE (vehicle_id, odm)
       );
+    `);
+  }
+  if (version < 5) {
+    // v5: tunnel_records (no UNIQUE — same tunnel twice a day is normal).
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS tunnel_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        tunnel INTEGER NOT NULL,
+        bound INTEGER NOT NULL,
+        fee REAL NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS idx_tunnel_vehicle_date
+        ON tunnel_records (vehicle_id, date);
     `);
   }
   if (version < SCHEMA_VERSION) {

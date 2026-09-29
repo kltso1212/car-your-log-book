@@ -19,6 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IFuelRecordService, FuelRecordService>();
 builder.Services.AddScoped<IChargeRecordService, ChargeRecordService>();
+builder.Services.AddScoped<ITunnelRecordService, TunnelRecordService>();
 
 var app = builder.Build();
 
@@ -53,6 +54,19 @@ using (var scope = app.Services.CreateScope())
     cmd.CommandText =
         "CREATE UNIQUE INDEX IF NOT EXISTS IX_charge_records_vehicle_id_odm " +
         "ON charge_records (vehicle_id, odm)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS tunnel_records (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "date TEXT NOT NULL, " +
+        "tunnel INTEGER NOT NULL, " +
+        "bound INTEGER NOT NULL, " +
+        "fee REAL NOT NULL, " +
+        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE INDEX IF NOT EXISTS IX_tunnel_records_vehicle_id_date " +
+        "ON tunnel_records (vehicle_id, date)";
     cmd.ExecuteNonQuery();
 }
 

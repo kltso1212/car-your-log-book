@@ -45,6 +45,16 @@ CREATE TABLE IF NOT EXISTS charge_records (
     price REAL NOT NULL DEFAULT 0,
     UNIQUE (vehicle_id, odm)
 );
+CREATE TABLE IF NOT EXISTS tunnel_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    tunnel INTEGER NOT NULL,
+    bound INTEGER NOT NULL,
+    fee REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_tunnel_vehicle_date
+    ON tunnel_records (vehicle_id, date);
 """
 
 # Existing files predate the type column (immutably set at creation);
@@ -91,3 +101,17 @@ def execute(query: str, params: tuple = ()) -> None:
         except Exception:
             _conn().rollback()
             raise
+
+
+def insert(query: str, params: tuple = ()) -> int:
+    """INSERT returning the new row id (for endpoints that echo it back)."""
+    print(query, params)
+    with _lock:
+        try:
+            cur = _conn().execute(query, params)
+            new_id = cur.lastrowid or 0
+            _conn().commit()
+        except Exception:
+            _conn().rollback()
+            raise
+    return new_id

@@ -39,6 +39,17 @@ class Message(BaseModel):
     message: str
 
 
+class TunnelRecordIn(BaseModel):
+    date: datetime.date
+    tunnel: int
+    bound: int
+    fee: float = 0
+
+
+class TunnelRecordOut(TunnelRecordIn):
+    id: int | None = None
+
+
 class ChargeRecordIn(BaseModel):
     date: datetime.date
     odm: int

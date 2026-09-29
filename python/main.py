@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
-from routers import chargerecords, fuelrecords, vehicles  # noqa: E402
+from routers import chargerecords, fuelrecords, tunnelrecords, vehicles  # noqa: E402
 
 app = FastAPI(title="fuel-app")
 
@@ -32,6 +32,7 @@ else:
 app.include_router(vehicles.router)
 app.include_router(fuelrecords.router)
 app.include_router(chargerecords.router)
+app.include_router(tunnelrecords.router)
 
 
 @app.get("/health")

@@ -166,6 +166,55 @@ app.put('/api/chargerecords/:vehicleId/:recordId', async (req, res) => {
     }
 });
 
+// Tunnel records: same CRUD shape as fuel, but no odm and no UNIQUE
+// constraint (same tunnel twice a day is normal). Deletes key on the
+// surrogate id instead of ?odm=.
+app.get('/api/tunnelrecords/:id', async (req, res) => {
+    const { id } = req.params;
+    console.log(`GET api/tunnelrecords/${id}`);
+    const { rows } = await db.query(
+        `SELECT id, date, tunnel, bound, fee
+        FROM tunnel_records
+        WHERE vehicle_id=$1
+        ORDER BY date DESC, id DESC`, [id]);
+    res.json(rows);
+});
+
+app.post('/api/tunnelrecords/:id', async (req, res) => {
+    const { id } = req.params;
+    const { date, tunnel, bound, fee } = req.body;
+    console.log(`POST api/tunnelrecords/${id} ${JSON.stringify(req.body)}`);
+    const result = await db.query(
+        `INSERT INTO tunnel_records
+        (vehicle_id, date, tunnel, bound, fee)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id`,
+        [id, date, tunnel, bound, fee]);
+    res.status(201).json({ message: '隧道記錄已新增', id: result.rows[0]?.id ?? null });
+});
+
+app.delete('/api/tunnelrecords/:vehicleId/:recordId', async (req, res) => {
+    const { vehicleId, recordId } = req.params;
+    console.log(`DELETE api/tunnelrecords/${vehicleId}/${recordId}`);
+    await db.query(
+        `DELETE FROM tunnel_records
+        WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
+    res.status(204).json({ message: '隧道記錄已刪除' });
+});
+
+app.put('/api/tunnelrecords/:vehicleId/:recordId', async (req, res) => {
+    const { vehicleId, recordId } = req.params;
+    const { date, tunnel, bound, fee } = req.body;
+    console.log(`PUT api/tunnelrecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
+    const result = await db.query(
+        `UPDATE tunnel_records
+        SET date=$1, tunnel=$2, bound=$3, fee=$4
+        WHERE id=$5 AND vehicle_id=$6`,
+        [date, tunnel, bound, fee, recordId, vehicleId]);
+    if (result.rowCount === 0) return res.status(404).json({ message: '找不到隧道記錄' });
+    res.status(200).json({ message: '隧道記錄已更新' });
+});
+
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => console.log(`Server running on http://${HOST}:${PORT}`));

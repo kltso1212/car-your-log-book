@@ -130,6 +130,14 @@ button:active {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
+.table-toolbar {
+  padding: 12px 12px 0;
+}
+
+.table-toolbar .add-button {
+  width: 100%;
+}
+
 table {
   width: 100%;
   min-width: 760px; /* force horizontal scroll instead of crushing on phones */

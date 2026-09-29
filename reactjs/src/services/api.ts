@@ -92,3 +92,27 @@ export const updateChargeRecord = async (vehicleId: string, rec: ChargeRecord) =
 export const deleteChargeRecord = async (id: string, rec: ChargeRecord) => {
   return api.delete(`/api/chargerecords/${id}`, { params: { odm: rec.odm } });
 };
+
+export interface TunnelRecord {
+  id?: number | string;
+  date: string;
+  tunnel: number;
+  bound: number;
+  fee: number;
+}
+
+export const getTunnelRecords = async (id: string) => {
+  return api.get<TunnelRecord[]>(`api/tunnelrecords/${id}`);
+};
+
+export const addTunnelRecord = async (id: string, rec: TunnelRecord) => {
+  return api.post(`api/tunnelrecords/${id}`, rec);
+};
+
+export const updateTunnelRecord = async (vehicleId: string, rec: TunnelRecord) => {
+  return api.put(`/api/tunnelrecords/${vehicleId}/${rec.id ?? 0}`, rec);
+};
+
+export const deleteTunnelRecord = async (vehicleId: string, rec: TunnelRecord) => {
+  return api.delete(`/api/tunnelrecords/${vehicleId}/${rec.id ?? 0}`);
+};

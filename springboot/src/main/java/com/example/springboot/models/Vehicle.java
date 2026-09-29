@@ -34,6 +34,9 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChargeRecord> chargeRecords = new ArrayList<>();
 
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TunnelRecord> tunnelRecords = new ArrayList<>();
+
     public Vehicle() {
     }
 

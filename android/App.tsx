@@ -9,6 +9,7 @@ import { VehicleContext, useVehicles } from './src/context';
 import VehicleBar from './src/components/VehicleBar';
 import FuelScreen from './src/screens/FuelScreen';
 import ChargeScreen from './src/screens/ChargeScreen';
+import TunnelScreen from './src/screens/TunnelScreen';
 import SummaryScreen from './src/screens/SummaryScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
 import { ELECTRIC_TYPE, pages, vehicleTypeOf, type Vehicle } from './src/data';
@@ -83,9 +84,9 @@ function MainTabs() {
       </Tab.Screen>
       <Tab.Screen
         name={pages[6]}
-        options={{ tabBarIcon: tabIcon(tabEmojis[6]!) }}>
-        {() => <PlaceholderScreen title={pages[6]!} />}
-      </Tab.Screen>
+        component={TunnelScreen}
+        options={{ tabBarIcon: tabIcon(tabEmojis[6]!) }}
+      />
       <Tab.Screen
         name={pages[7]}
         options={{ tabBarIcon: tabIcon(tabEmojis[7]!) }}>
