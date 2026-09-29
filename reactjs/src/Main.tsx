@@ -33,9 +33,10 @@ function AppShell() {
   return (
     <VehicleContext.Provider value={{ vehicles, setVehicles, currentVehicle, setCurrentVehicle }}>
       <PageContext.Provider value={{ currentPage, setCurrentPage }}>
-        {/* Persistent on every route: vehicle picker + navbar */}
-        <NavigationBar />
+        {/* Vehicle picker first; navbar only appears once a vehicle is
+            selected, below the picker */}
         {loading ? <h2>正在載入...</h2> : (loadSuccess ? <VehicleSelect /> : <h2>載入失敗!</h2>)}
+        {!loading && loadSuccess && currentVehicle && <NavigationBar />}
         {!loading && loadSuccess && (
           <Routes>
             <Route path="/" element={<HomePage />} />
