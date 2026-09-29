@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+.env
+*.log
+
+# signing keystore (private, never commit)
+*.jks
+
+# IDE
+.idea/

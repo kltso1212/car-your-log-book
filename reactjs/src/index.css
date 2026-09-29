@@ -1,0 +1,548 @@
+:root {
+  --bg-light: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-dark: #212529;
+  --text-muted: #6c757d;
+  --accent-blue: #61dafb; /* Boosted color contrast for text readability over light bg */
+  --accent-blue-hover: #4fa8cb;
+  --border-light: #dee2e6;
+  --bg-input: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+input {
+  background-color: var(--bg-input);
+  color: var(--text-dark);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+select {
+  appearance: none;
+  background-color: var(--bg-input);
+  color: var(--text-dark);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 10px 40px 10px 14px;
+  font-size: 16px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+
+  /* Custom Arrow SVG Icon */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2361dafb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+select:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+select option {
+  background-color: var(--bg-card);
+  color: var(--text-dark);
+}
+
+button {
+  background-color: var(--accent-blue);
+  color: var(--text-dark);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover {
+  background-color: var(--accent-blue-hover);
+  color: #ffffff;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Icon-only action buttons (matches android card ✏️/🗑️ buttons). */
+.icon-button {
+  background-color: #f1f3f5;
+  color: var(--text-dark);
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.icon-button:hover {
+  background-color: var(--accent-blue-hover);
+}
+
+.icon-button.danger:hover {
+  background-color: #f8d7da;
+}
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  /* max-width: 100%; */
+  margin: 20px 0;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+table {
+  width: 100%;
+  min-width: 760px; /* force horizontal scroll instead of crushing on phones */
+  border-collapse: collapse;
+  font-size: 15px;
+  text-align: left;
+  background-color: var(--bg-card);
+  color: var(--text-dark);
+}
+
+th {
+  background-color: #f1f3f5; /* Subtle off-white header banner */
+  color: var(--text-dark);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+
+th,
+td {
+  text-align: center;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
+td input,
+td select {
+  min-width: 110px;
+}
+
+table tbody tr {
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s;
+}
+
+table tbody tr:nth-of-type(even) {
+  background-color: #f8f9fa;
+}
+
+table tbody tr:last-of-type {
+  border-bottom: none;
+}
+
+table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.04); /* Light blue tint highlight */
+}
+
+.tabs-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto; /* 預設水平置中 */
+  font-family: sans-serif;
+}
+
+.tab-list {
+  display: flex;
+  flex-wrap: nowrap;
+  border-bottom: 2px solid var(--border-light);
+  margin: 0 0 20px 0;
+  padding: 0;
+  list-style: none;
+  gap: 4px;
+  overflow: visible; /* 5 short tabs must fit — no horizontal scrollbar */
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.25;
+  padding: 10px 8px;
+  cursor: pointer;
+  position: relative;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  white-space: nowrap;
+  flex: 1 1 0; /* distribute evenly, shrink to fit */
+  min-width: 0;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-button:hover {
+  background-color: var(--accent-blue-hover);
+  color: #ffffff;
+}
+
+.tab-button.active {
+  font-weight: 600;
+  border-bottom-color: var(--accent-blue);
+  color: var(--text-dark);
+}
+
+.tab-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  /* background-color: var(--bg-card); */
+  /* border: 1px solid var(--border-light); */
+  /* border-radius: 8px; */
+  padding: 12px;
+  color: var(--text-dark);
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02); */
+  /* animation: fadeIn 0.3s ease; */
+  gap: 8px;
+}
+
+.vehicle-bar {
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-light);
+}
+
+/* Row action cell (PC table): edit + delete icon buttons side by side. */
+.row-actions {
+  white-space: nowrap;
+}
+
+.row-actions .icon-button {
+  margin: 0 2px;
+}
+
+/* 總覽 dashboard: label/value rows, same card look as mobile cards. */
+.summary {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.summary-row dt {
+  flex: 0 0 auto;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.summary-row dd {
+  flex: 1;
+  margin: 0;
+  text-align: right;
+}
+
+.summary-row dd .sub {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.summary-row dd.placeholder {
+  color: var(--text-muted);
+}
+
+/* Mobile card list (mirrors the android FlatList cards). */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-button {
+  width: 100%;
+  min-height: 46px;
+  font-size: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+.card-side {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Shared insert/edit dialog. */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+
+.dialog {
+  background: var(--bg-card);
+  border-radius: 12px 12px 0 0;
+  padding: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialog h2 {
+  margin: 0;
+  text-align: center;
+}
+
+.dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+}
+
+.form-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.form-row input,
+.form-row select {
+  max-width: none;
+}
+
+.unit-box {
+  flex: 1;
+  align-self: flex-end;
+  text-align: center;
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialog .hint {
+  margin: 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+@media (min-width: 769px) {
+  .dialog-backdrop {
+    align-items: center;
+  }
+
+  .dialog {
+    border-radius: 12px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Mobile: scale tables + controls to fit phones ---- */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  table {
+    min-width: 680px;
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 8px 10px;
+  }
+
+  td input,
+  td select {
+    min-width: 90px;
+    font-size: 16px; /* prevents iOS auto-zoom */
+    padding: 8px 10px;
+  }
+
+  .tab-button {
+    padding: 10px 6px;
+    font-size: 15px;
+  }
+
+  /* Fixed 4-column grid: 7 tabs always lay out 4 + 3. Widths are automatic
+     (container minus gaps, divided by 4) — see note below for numbers. */
+  .tab-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: none;
+  }
+
+  .tab-button {
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    margin-bottom: 0;
+  }
+
+  .tab-button.active {
+    border-color: var(--accent-blue);
+    background-color: rgba(0, 123, 255, 0.12);
+    color: var(--text-dark);
+  }
+
+  /* Touch screens keep :hover stuck after a tap, which left white text on
+     light blue. On devices without hover, never apply the hover colors. */
+  @media (hover: none) {
+    .tab-button:hover {
+      background-color: transparent;
+      color: var(--text-muted);
+    }
+
+    .tab-button.active:hover {
+      background-color: rgba(0, 123, 255, 0.12);
+      color: var(--text-dark);
+    }
+  }
+
+  .tab-panel {
+    padding: 8px;
+  }
+
+  button {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  table {
+    min-width: 600px;
+    font-size: 12px;
+  }
+
+  th,
+  td {
+    padding: 6px 8px;
+  }
+
+  .tab-list {
+    gap: 2px;
+  }
+
+  .tab-button {
+    padding: 8px 4px;
+    font-size: 14px;
+  }
+
+  .vehicle-bar {
+    flex-wrap: nowrap;
+  }
+
+  .vehicle-bar select {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .vehicle-bar button {
+    flex: 0 0 44px;
+  }
+}

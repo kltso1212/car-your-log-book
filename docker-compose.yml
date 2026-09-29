@@ -1,0 +1,61 @@
+services:
+  # Any ONE backend at a time (they are alternative implementations of the
+  # same API). Each keeps its SQLite file on a shared volume so the db
+  # survives container rebuilds. Uncomment the one you want to run.
+  backend-node:
+    build: ./nodejs
+    env_file:
+      - ./nodejs/.env
+    environment:
+      SQLITE_PATH: /data/fuel.db
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      PORT: 5000
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    volumes:
+      - sqlite-data:/data
+
+  # backend-python:
+  #   build: ./python
+  #   environment:
+  #     SQLITE_PATH: /data/fuel.db
+  #     CORS_ORIGIN: ${CORS_ORIGIN:-*}
+  #     PORT: 5000
+  #   ports:
+  #     - "${BACKEND_PORT:-5000}:5000"
+  #   volumes:
+  #     - sqlite-data:/data
+
+  # backend-dotnet:
+  #   build: ./dotnet
+  #   environment:
+  #     ConnectionStrings__DefaultConnection: Data Source=/data/fuel.db
+  #     CORS_ORIGIN: ${CORS_ORIGIN:-*}
+  #   ports:
+  #     - "${BACKEND_PORT:-5000}:5000"
+  #   volumes:
+  #     - sqlite-data:/data
+
+  # backend-springboot:
+  #   build: ./springboot
+  #   environment:
+  #     SQLITE_PATH: /data/fuel.db
+  #     CORS_ORIGIN: ${CORS_ORIGIN:-*}
+  #     PORT: 5000
+  #   ports:
+  #     - "${BACKEND_PORT:-5000}:5000"
+  #   volumes:
+  #     - sqlite-data:/data
+
+  frontend:
+    build:
+      context: ./reactjs
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend-node
+
+volumes:
+  sqlite-data:
