@@ -5,11 +5,9 @@ import { VehicleContext } from '../contexts/VehicleContext';
 import { TunnelRecordContext } from '../contexts/TunnelRecordContext';
 import { TunnelBoundName, TunnelName } from '../types/Tunnel';
 import TableHeader from './TableHeader';
+import TunnelInsertRow from './TunnelInsertRow';
 
-export default function TunnelTable({ onEdit, onAdd }: {
-  onAdd: () => void;
-  onEdit: (record: TunnelRecord) => void;
-}) {
+export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord) => void }) {
   const { currentVehicle } = useContext(VehicleContext);
   const { tunnelRecords, setTunnelRecords } = useContext(TunnelRecordContext);
 
@@ -31,9 +29,6 @@ export default function TunnelTable({ onEdit, onAdd }: {
 
   return (
     <div className="table-container">
-      <div className="table-toolbar">
-        <button className="add-button" onClick={onAdd}>➕ 新增隧道記錄</button>
-      </div>
       <table>
         <TableHeader columns={['日期', '隧道', '方向', '隧道費', '']} />
         <tbody>
@@ -69,6 +64,7 @@ export default function TunnelTable({ onEdit, onAdd }: {
               </tr>
             ))
           )}
+          <TunnelInsertRow />
         </tbody>
       </table>
     </div>

@@ -45,10 +45,7 @@ export default function TunnelPage() {
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         ) : (
-          <TunnelTable
-            onAdd={() => setDialog({ mode: 'insert' })}
-            onEdit={record => setDialog({ mode: 'edit', record })}
-          />
+          <TunnelTable onEdit={record => setDialog({ mode: 'edit', record })} />
         )}
         {dialog.mode !== 'closed' && (
           <TunnelDialog
