@@ -7,6 +7,11 @@ import { vehicleTypeOf } from '../types/Vehicle';
 import FuelRecordPage from './FuelRecordPage';
 import ChargePage from './ChargePage';
 import TunnelPage from './TunnelPage';
+import ParkingPage from './ParkingPage';
+import FinePage from './FinePage';
+import ServicePage from './ServicePage';
+import InsurancePage from './InsurancePage';
+import LicencePage from './LicencePage';
 import SummaryPage from './SummaryPage';
 import ComingSoonPage from './ComingSoonPage';
 
@@ -58,6 +63,16 @@ export default function VehicleRoutePage() {
         <ChargePage />
       ) : slug === 'tunnel' ? (
         <TunnelPage />
+      ) : slug === 'parking' ? (
+        <ParkingPage />
+      ) : slug === 'fine' ? (
+        <FinePage />
+      ) : slug === 'service' ? (
+        <ServicePage />
+      ) : slug === 'insurance' ? (
+        <InsurancePage />
+      ) : slug === 'licence' ? (
+        <LicencePage />
       ) : slug === 'summary' ? (
         <SummaryPage />
       ) : (

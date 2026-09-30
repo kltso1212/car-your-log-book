@@ -10,6 +10,11 @@ import VehicleBar from './src/components/VehicleBar';
 import FuelScreen from './src/screens/FuelScreen';
 import ChargeScreen from './src/screens/ChargeScreen';
 import TunnelScreen from './src/screens/TunnelScreen';
+import ParkingScreen from './src/screens/ParkingScreen';
+import FineScreen from './src/screens/FineScreen';
+import ServiceScreen from './src/screens/ServiceScreen';
+import InsuranceScreen from './src/screens/InsuranceScreen';
+import LicenceScreen from './src/screens/LicenceScreen';
 import SummaryScreen from './src/screens/SummaryScreen';
 import PlaceholderScreen from './src/screens/PlaceholderScreen';
 import { ELECTRIC_TYPE, pages, vehicleTypeOf, type Vehicle } from './src/data';
@@ -69,19 +74,19 @@ function MainTabs() {
       )}
       <Tab.Screen
         name={pages[3]}
-        options={{ tabBarIcon: tabIcon(tabEmojis[3]!) }}>
-        {() => <PlaceholderScreen title={pages[3]!} />}
-      </Tab.Screen>
+        component={ServiceScreen}
+        options={{ tabBarIcon: tabIcon(tabEmojis[3]!) }}
+      />
       <Tab.Screen
         name={pages[4]}
-        options={{ tabBarIcon: tabIcon(tabEmojis[4]!) }}>
-        {() => <PlaceholderScreen title={pages[4]!} />}
-      </Tab.Screen>
+        component={InsuranceScreen}
+        options={{ tabBarIcon: tabIcon(tabEmojis[4]!) }}
+      />
       <Tab.Screen
         name={pages[5]}
-        options={{ tabBarIcon: tabIcon(tabEmojis[5]!) }}>
-        {() => <PlaceholderScreen title={pages[5]!} />}
-      </Tab.Screen>
+        component={LicenceScreen}
+        options={{ tabBarIcon: tabIcon(tabEmojis[5]!) }}
+      />
       <Tab.Screen
         name={pages[6]}
         component={TunnelScreen}
@@ -89,14 +94,14 @@ function MainTabs() {
       />
       <Tab.Screen
         name={pages[7]}
-        options={{ tabBarIcon: tabIcon(tabEmojis[7]!) }}>
-        {() => <PlaceholderScreen title={pages[7]!} />}
-      </Tab.Screen>
+        component={ParkingScreen}
+        options={{ tabBarIcon: tabIcon(tabEmojis[7]!) }}
+      />
       <Tab.Screen
         name={pages[8]}
-        options={{ tabBarIcon: tabIcon(tabEmojis[8]!) }}>
-        {() => <PlaceholderScreen title={pages[8]!} />}
-      </Tab.Screen>
+        component={FineScreen}
+        options={{ tabBarIcon: tabIcon(tabEmojis[8]!) }}
+      />
     </Tab.Navigator>
   );
 }

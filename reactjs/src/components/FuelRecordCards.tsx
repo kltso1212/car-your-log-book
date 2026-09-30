@@ -10,10 +10,8 @@ import type { FuelRecord } from '../types';
 // Mobile card list (same layout as the android FlatList): used below the
 // 768px breakpoint instead of FuelRecordTable. Edit/delete mirror android.
 export default function FuelRecordCards({
-  onAdd,
   onEdit,
 }: {
-  onAdd: () => void;
   onEdit: (record: FuelRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -37,7 +35,6 @@ export default function FuelRecordCards({
 
   return (
     <div className="cards">
-      <button className="add-button" onClick={onAdd}>➕ 新增入油記錄</button>
       {fuelRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (

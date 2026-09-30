@@ -116,3 +116,124 @@ export const updateTunnelRecord = async (vehicleId: string, rec: TunnelRecord) =
 export const deleteTunnelRecord = async (vehicleId: string, rec: TunnelRecord) => {
   return api.delete(`/api/tunnelrecords/${vehicleId}/${rec.id ?? 0}`);
 };
+
+export interface ParkingRecord {
+  id?: number | string;
+  date: string;
+  carpark: string;
+  rentalType: number;
+  fee: number;
+}
+
+export const getParkingRecords = async (id: string) => {
+  return api.get<ParkingRecord[]>(`api/parkingrecords/${id}`);
+};
+
+export const addParkingRecord = async (id: string, rec: ParkingRecord) => {
+  return api.post(`api/parkingrecords/${id}`, rec);
+};
+
+export const updateParkingRecord = async (vehicleId: string, rec: ParkingRecord) => {
+  return api.put(`/api/parkingrecords/${vehicleId}/${rec.id ?? 0}`, rec);
+};
+
+export const deleteParkingRecord = async (vehicleId: string, rec: ParkingRecord) => {
+  return api.delete(`/api/parkingrecords/${vehicleId}/${rec.id ?? 0}`);
+};
+
+export interface FineRecord {
+  id?: number | string;
+  date: string;
+  offences: number[];
+  customOffence?: string | null;
+  location?: string | null;
+  penalty: number;
+}
+
+export const getFineRecords = async (id: string) => {
+  return api.get<FineRecord[]>(`api/finerecords/${id}`);
+};
+
+export const addFineRecord = async (id: string, rec: Omit<FineRecord, 'id'>) => {
+  return api.post(`api/finerecords/${id}`, rec);
+};
+
+export const updateFineRecord = async (vehicleId: string, rec: FineRecord) => {
+  return api.put(`/api/finerecords/${vehicleId}/${rec.id ?? 0}`, rec);
+};
+
+export const deleteFineRecord = async (vehicleId: string, rec: FineRecord) => {
+  return api.delete(`/api/finerecords/${vehicleId}/${rec.id ?? 0}`);
+};
+
+export interface ServiceRecord {
+  id?: number | string;
+  date: string;
+  odm: number;
+  items: number[];
+  customItem?: string | null;
+  price: number;
+}
+
+export const getServiceRecords = async (id: string) => {
+  return api.get<ServiceRecord[]>(`api/servicerecords/${id}`);
+};
+
+export const addServiceRecord = async (id: string, rec: Omit<ServiceRecord, 'id'>) => {
+  return api.post(`api/servicerecords/${id}`, rec);
+};
+
+export const updateServiceRecord = async (vehicleId: string, rec: ServiceRecord) => {
+  return api.put(`/api/servicerecords/${vehicleId}/${rec.id ?? 0}`, rec);
+};
+
+export const deleteServiceRecord = async (id: string, rec: ServiceRecord) => {
+  return api.delete(`/api/servicerecords/${id}`, { params: { odm: rec.odm } });
+};
+
+export interface InsuranceRecord {
+  id?: number | string;
+  date: string;
+  type: number;
+  broker?: string | null;
+  fee: number;
+}
+
+export interface LicenceRecord {
+  id?: number | string;
+  date: string;
+  type: number;
+  fee: number;
+}
+
+export const getInsuranceRecords = async (id: string) => {
+  return api.get<InsuranceRecord[]>(`api/insurancerecords/${id}`);
+};
+
+export const addInsuranceRecord = async (id: string, rec: Omit<InsuranceRecord, 'id'>) => {
+  return api.post(`api/insurancerecords/${id}`, rec);
+};
+
+export const updateInsuranceRecord = async (vehicleId: string, rec: InsuranceRecord) => {
+  return api.put(`/api/insurancerecords/${vehicleId}/${rec.id ?? 0}`, rec);
+};
+
+export const deleteInsuranceRecord = async (vehicleId: string, rec: InsuranceRecord) => {
+  return api.delete(`/api/insurancerecords/${vehicleId}/${rec.id ?? 0}`);
+};
+
+export const getLicenceRecords = async (id: string) => {
+  return api.get<LicenceRecord[]>(`api/licencerecords/${id}`);
+};
+
+export const addLicenceRecord = async (id: string, rec: Omit<LicenceRecord, 'id'>) => {
+  return api.post(`api/licencerecords/${id}`, rec);
+};
+
+export const updateLicenceRecord = async (vehicleId: string, rec: LicenceRecord) => {
+  return api.put(`/api/licencerecords/${vehicleId}/${rec.id ?? 0}`, rec);
+};
+
+export const deleteLicenceRecord = async (vehicleId: string, rec: LicenceRecord) => {
+  return api.delete(`/api/licencerecords/${vehicleId}/${rec.id ?? 0}`);
+};

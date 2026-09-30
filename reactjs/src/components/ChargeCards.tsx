@@ -6,10 +6,8 @@ import { ChargeRecordContext } from '../contexts/ChargeRecordContext';
 
 // Mobile card list for charge records (mirrors FuelRecordCards).
 export default function ChargeCards({
-  onAdd,
   onEdit,
 }: {
-  onAdd: () => void;
   onEdit: (record: ChargeRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -33,7 +31,6 @@ export default function ChargeCards({
 
   return (
     <div className="cards">
-      <button className="add-button" onClick={onAdd}>➕ 新增充電記錄</button>
       {chargeRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (

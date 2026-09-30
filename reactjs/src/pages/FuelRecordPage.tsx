@@ -55,15 +55,19 @@ export default function FuelRecordPage() {
     <FuelRecordContext.Provider value={{ fuelRecords, setFuelRecords }}>
       <div>
         {!loading && fuelConsumption !== 0 && <p>平均油耗：$ {Number(fuelConsumption).toFixed(2)} / km</p>}
+        {!loading && (
+          <button className="add-button" onClick={() => setDialog({ mode: 'insert' })}>➕ 新增入油記錄</button>
+        )}
         {loading ? (
           <h2>正在載入...</h2>
         ) : isMobile ? (
           <FuelRecordCards
-            onAdd={() => setDialog({ mode: 'insert' })}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         ) : (
-          <FuelRecordTable onEdit={record => setDialog({ mode: 'edit', record })} />
+          <FuelRecordTable
+            onEdit={record => setDialog({ mode: 'edit', record })}
+          />
         )}
         {dialog.mode !== 'closed' && (
           <FuelRecordDialog

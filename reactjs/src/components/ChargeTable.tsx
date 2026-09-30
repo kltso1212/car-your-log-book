@@ -4,7 +4,6 @@ import { deleteChargeRecord, type ChargeRecord } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ChargeRecordContext } from '../contexts/ChargeRecordContext';
 import TableHeader from './TableHeader';
-import ChargeInsertRow from './ChargeInsertRow';
 
 export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord) => void }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -64,7 +63,6 @@ export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord)
               </tr>
             ))
           )}
-          <ChargeInsertRow />
         </tbody>
       </table>
     </div>

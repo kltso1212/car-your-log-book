@@ -7,10 +7,8 @@ import { TunnelBoundName, TunnelName } from '../types/Tunnel';
 
 // Mobile card list for tunnel trips (mirrors FuelRecordCards).
 export default function TunnelCards({
-  onAdd,
   onEdit,
 }: {
-  onAdd: () => void;
   onEdit: (record: TunnelRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -34,7 +32,6 @@ export default function TunnelCards({
 
   return (
     <div className="cards">
-      <button className="add-button" onClick={onAdd}>➕ 新增隧道記錄</button>
       {tunnelRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (

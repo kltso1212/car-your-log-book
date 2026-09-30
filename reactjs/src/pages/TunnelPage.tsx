@@ -37,15 +37,19 @@ export default function TunnelPage() {
   return (
     <TunnelRecordContext.Provider value={{ tunnelRecords, setTunnelRecords }}>
       <div>
+        {!loading && (
+          <button className="add-button" onClick={() => setDialog({ mode: 'insert' })}>➕ 新增隧道記錄</button>
+        )}
         {loading ? (
           <h2>正在載入...</h2>
         ) : isMobile ? (
           <TunnelCards
-            onAdd={() => setDialog({ mode: 'insert' })}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         ) : (
-          <TunnelTable onEdit={record => setDialog({ mode: 'edit', record })} />
+          <TunnelTable
+            onEdit={record => setDialog({ mode: 'edit', record })}
+          />
         )}
         {dialog.mode !== 'closed' && (
           <TunnelDialog

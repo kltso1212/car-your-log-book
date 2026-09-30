@@ -3,20 +3,22 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { listChargeRecords } from '../db/charge';
 import { listFuelRecords } from '../db/fuel';
+import { listServiceRecords, type ServiceRecord } from '../db/service';
+import { listInsuranceRecords, listLicenceRecords, type InsuranceRecord, type LicenceRecord } from '../db/dated';
 import { useVehicles } from '../context';
-import { ELECTRIC_TYPE, vehicleTypeOf, type ChargeRecord, type FuelRecord } from '../data';
+import type { ChargeRecord, FuelRecord } from '../data';
+import { ELECTRIC_TYPE, vehicleTypeOf } from '../data';
 import { compareFuelByDateAsc } from '../sort';
+import { insuranceExpiry, licenceExpiry } from '../expiry';
 
-// 總覽: per-vehicle dashboard. Insurance / licence expiry are placeholders
-// until those record pages land. 現時行車哩數 spans fuel AND charge records
-// (electric vehicles only have the latter); fold service records in here
-// once that page has a data layer.
+// 總覽: per-vehicle dashboard. 現時行車哩數 spans fuel, charge AND
+// service records (electric vehicles only have charge records).
 export function maxOdm(records: Array<{ odm: number }>): number {
   return records.reduce((max, r) => Math.max(max, r.odm), 0);
 }
 
 // The record behind 現時行車哩數: highest odm, latest date on ties.
-// Its date is shown as 最近更新日期. Works across fuel + charge rows.
+// Its date is shown as 最近更新日期. Works across fuel + charge + service rows.
 export function maxOdmRecord<T extends { odm: number; date: string }>(
   records: T[],
 ): T | undefined {
@@ -63,24 +65,39 @@ export default function SummaryScreen() {
   const isElectric = vehicleTypeOf(vehicles, currentVehicle) === ELECTRIC_TYPE;
   const [records, setRecords] = useState<FuelRecord[]>([]);
   const [charges, setCharges] = useState<ChargeRecord[]>([]);
+  const [services, setServices] = useState<ServiceRecord[]>([]);
+  const [insurance, setInsurance] = useState<InsuranceRecord[]>([]);
+  const [licence, setLicence] = useState<LicenceRecord[]>([]);
 
   const load = useCallback(async () => {
     if (!currentVehicle) {
       setRecords([]);
       setCharges([]);
+      setServices([]);
+      setInsurance([]);
+      setLicence([]);
       return;
     }
     try {
-      const [f, c] = await Promise.all([
+      const [f, c, s, ins, lic] = await Promise.all([
         listFuelRecords(currentVehicle),
         listChargeRecords(currentVehicle),
+        listServiceRecords(currentVehicle),
+        listInsuranceRecords(currentVehicle),
+        listLicenceRecords(currentVehicle),
       ]);
       setRecords(f);
       setCharges(c);
+      setServices(s);
+      setInsurance(ins);
+      setLicence(lic);
     } catch (e: unknown) {
       Alert.alert('載入失敗', e instanceof Error ? e.message : String(e));
       setRecords([]);
       setCharges([]);
+      setServices([]);
+      setInsurance([]);
+      setLicence([]);
     }
   }, [currentVehicle]);
 
@@ -92,10 +109,12 @@ export default function SummaryScreen() {
 
   if (!currentVehicle) return <Text style={styles.hint}>請在上方選擇您的座駕</Text>;
 
-  const latest = maxOdmRecord([...records, ...charges]);
+  const latest = maxOdmRecord([...records, ...charges, ...services]);
   const consumption = averageConsumption(records);
   const power = averagePowerConsumption(charges);
   const shown = isElectric ? power : consumption;
+  const insuranceDue = insuranceExpiry(insurance);
+  const licenceDue = licenceExpiry(licence);
 
   const rows: Array<{ label: string; value: string; sub?: string; placeholder?: boolean }> = [
     {
@@ -107,8 +126,16 @@ export default function SummaryScreen() {
       label: isElectric ? '平均電耗' : '平均油耗',
       value: shown !== 0 ? `$ ${shown.toFixed(2)} / km` : '沒有記錄',
     },
-    { label: '保險到期日', value: '尚未設定', placeholder: true },
-    { label: '牌費到期日', value: '尚未設定', placeholder: true },
+    {
+      label: '保險到期日',
+      value: insuranceDue || '尚未設定',
+      placeholder: !insuranceDue,
+    },
+    {
+      label: '牌費到期日',
+      value: licenceDue || '尚未設定',
+      placeholder: !licenceDue,
+    },
   ];
 
   return (

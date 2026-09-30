@@ -37,6 +37,21 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TunnelRecord> tunnelRecords = new ArrayList<>();
 
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ParkingRecord> parkingRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FineRecord> fineRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ServiceRecord> serviceRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InsuranceRecord> insuranceRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LicenceRecord> licenceRecords = new ArrayList<>();
+
     public Vehicle() {
     }
 

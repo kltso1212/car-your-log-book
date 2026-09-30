@@ -6,7 +6,6 @@ import { Vendor } from '../types/Vendor';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FuelRecordContext } from '../contexts/FuelRecordContext';
 import TableHeader from './TableHeader';
-import InsertFuelRecord from './InsertFuelRecord';
 
 import type { FuelRecord } from '../types';
 
@@ -70,7 +69,6 @@ export default function FuelRecordTable({ onEdit }: { onEdit: (record: FuelRecor
               </tr>
             ))
           )}
-          <InsertFuelRecord />
         </tbody>
       </table>
     </div>

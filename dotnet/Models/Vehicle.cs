@@ -13,6 +13,11 @@
         public ICollection<FuelRecord> FuelRecords { get; set; } = [];
         public ICollection<ChargeRecord> ChargeRecords { get; set; } = [];
         public ICollection<TunnelRecord> TunnelRecords { get; set; } = [];
+        public ICollection<ParkingRecord> ParkingRecords { get; set; } = [];
+        public ICollection<FineRecord> FineRecords { get; set; } = [];
+        public ICollection<ServiceRecord> ServiceRecords { get; set; } = [];
+        public ICollection<InsuranceRecord> InsuranceRecords { get; set; } = [];
+        public ICollection<LicenceRecord> LicenceRecords { get; set; } = [];
         public Vehicle() { }
         public Vehicle(VehicleDto data)
         {

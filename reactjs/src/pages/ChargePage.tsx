@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import { getChargeRecords, type ChargeRecord } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ChargeRecordContext } from '../contexts/ChargeRecordContext';
@@ -7,6 +7,7 @@ import ChargeCards from '../components/ChargeCards';
 import ChargeDialog from '../components/ChargeDialog';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { compareChargeByDateDesc } from '../utils/chargeSort';
+import { averagePowerConsumption } from '../utils/fuelStats';
 
 type DialogState = { mode: 'closed' } | { mode: 'insert' } | { mode: 'edit'; record: ChargeRecord };
 
@@ -34,18 +35,28 @@ export default function ChargePage() {
       .finally(() => setLoading(false));
   }, [currentVehicle]);
 
+  const powerConsumption = useMemo<number>(
+    () => averagePowerConsumption(chargeRecords),
+    [chargeRecords],
+  );
+
   return (
     <ChargeRecordContext.Provider value={{ chargeRecords, setChargeRecords }}>
       <div>
+        {!loading && powerConsumption !== 0 && <p>平均電耗：$ {Number(powerConsumption).toFixed(2)} / km</p>}
+        {!loading && (
+          <button className="add-button" onClick={() => setDialog({ mode: 'insert' })}>➕ 新增充電記錄</button>
+        )}
         {loading ? (
           <h2>正在載入...</h2>
         ) : isMobile ? (
           <ChargeCards
-            onAdd={() => setDialog({ mode: 'insert' })}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         ) : (
-          <ChargeTable onEdit={record => setDialog({ mode: 'edit', record })} />
+          <ChargeTable
+            onEdit={record => setDialog({ mode: 'edit', record })}
+          />
         )}
         {dialog.mode !== 'closed' && (
           <ChargeDialog

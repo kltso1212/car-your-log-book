@@ -20,6 +20,11 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IFuelRecordService, FuelRecordService>();
 builder.Services.AddScoped<IChargeRecordService, ChargeRecordService>();
 builder.Services.AddScoped<ITunnelRecordService, TunnelRecordService>();
+builder.Services.AddScoped<IParkingRecordService, ParkingRecordService>();
+builder.Services.AddScoped<IFineRecordService, FineRecordService>();
+builder.Services.AddScoped<IServiceRecordService, ServiceRecordService>();
+builder.Services.AddScoped<IInsuranceRecordService, InsuranceRecordService>();
+builder.Services.AddScoped<ILicenceRecordService, LicenceRecordService>();
 
 var app = builder.Build();
 
@@ -67,6 +72,72 @@ using (var scope = app.Services.CreateScope())
     cmd.CommandText =
         "CREATE INDEX IF NOT EXISTS IX_tunnel_records_vehicle_id_date " +
         "ON tunnel_records (vehicle_id, date)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS parking_records (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "date TEXT NOT NULL, " +
+        "carpark TEXT NOT NULL, " +
+        "rental_type INTEGER NOT NULL, " +
+        "fee REAL NOT NULL, " +
+        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE INDEX IF NOT EXISTS IX_parking_records_vehicle_id_date " +
+        "ON parking_records (vehicle_id, date)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS fine_records (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "date TEXT NOT NULL, " +
+        "offences TEXT NOT NULL DEFAULT '[]', " +
+        "custom_offence TEXT, " +
+        "location TEXT, " +
+        "penalty REAL NOT NULL, " +
+        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE INDEX IF NOT EXISTS IX_fine_records_vehicle_id_date " +
+        "ON fine_records (vehicle_id, date)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS service_records (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "date TEXT NOT NULL, " +
+        "odm INTEGER NOT NULL, " +
+        "items TEXT NOT NULL DEFAULT '[]', " +
+        "custom_item TEXT, " +
+        "price REAL NOT NULL, " +
+        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE UNIQUE INDEX IF NOT EXISTS IX_service_records_vehicle_id_odm " +
+        "ON service_records (vehicle_id, odm)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS insurance_records (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "date TEXT NOT NULL, " +
+        "type INTEGER NOT NULL, " +
+        "broker TEXT, " +
+        "fee REAL NOT NULL, " +
+        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE UNIQUE INDEX IF NOT EXISTS IX_insurance_records_vehicle_id_date " +
+        "ON insurance_records (vehicle_id, date)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS licence_records (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "date TEXT NOT NULL, " +
+        "type INTEGER NOT NULL, " +
+        "fee REAL NOT NULL, " +
+        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE UNIQUE INDEX IF NOT EXISTS IX_licence_records_vehicle_id_date " +
+        "ON licence_records (vehicle_id, date)";
     cmd.ExecuteNonQuery();
 }
 

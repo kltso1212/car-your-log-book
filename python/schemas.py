@@ -50,6 +50,62 @@ class TunnelRecordOut(TunnelRecordIn):
     id: int | None = None
 
 
+class ParkingRecordIn(BaseModel):
+    date: datetime.date
+    carpark: str
+    rentalType: int = 1
+    fee: float = 0
+
+
+class ParkingRecordOut(ParkingRecordIn):
+    id: int | None = None
+
+
+class FineRecordIn(BaseModel):
+    date: datetime.date
+    offences: list[int] = []
+    customOffence: str | None = None
+    location: str | None = None
+    penalty: float = 0
+
+
+class FineRecordOut(FineRecordIn):
+    id: int | None = None
+
+
+class ServiceRecordIn(BaseModel):
+    date: datetime.date
+    odm: int
+    items: list[int] = []
+    customItem: str | None = None
+    price: float = 0
+
+
+class ServiceRecordOut(ServiceRecordIn):
+    id: int | None = None
+
+
+class InsuranceRecordIn(BaseModel):
+    date: datetime.date
+    type: int
+    broker: str | None = None
+    fee: float = 0
+
+
+class InsuranceRecordOut(InsuranceRecordIn):
+    id: int | None = None
+
+
+class LicenceRecordIn(BaseModel):
+    date: datetime.date
+    type: int
+    fee: float = 0
+
+
+class LicenceRecordOut(LicenceRecordIn):
+    id: int | None = None
+
+
 class ChargeRecordIn(BaseModel):
     date: datetime.date
     odm: int

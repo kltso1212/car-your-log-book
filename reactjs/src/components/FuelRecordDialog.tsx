@@ -14,7 +14,7 @@ const allowedFuelTypes = (t: number | undefined): number[] =>
   t === DIESEL_TYPE ? [DIESEL_FUEL_TYPE] : fuelTypes.map((_, i) => i).filter(i => i !== DIESEL_FUEL_TYPE);
 
 // Shared insert/edit dialog (same 3-row layout as the android dialog).
-// PC table uses it for edit only; mobile cards use it for both add and edit.
+// Opened from the page-level button for both add and edit.
 export default function FuelRecordDialog({
   initial,
   onClose,

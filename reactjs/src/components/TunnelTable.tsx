@@ -5,7 +5,6 @@ import { VehicleContext } from '../contexts/VehicleContext';
 import { TunnelRecordContext } from '../contexts/TunnelRecordContext';
 import { TunnelBoundName, TunnelName } from '../types/Tunnel';
 import TableHeader from './TableHeader';
-import TunnelInsertRow from './TunnelInsertRow';
 
 export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord) => void }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -64,7 +63,6 @@ export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord)
               </tr>
             ))
           )}
-          <TunnelInsertRow />
         </tbody>
       </table>
     </div>

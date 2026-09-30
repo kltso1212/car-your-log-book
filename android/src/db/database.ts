@@ -5,7 +5,7 @@ import * as SQLite from 'expo-sqlite';
 // (vehicles / fuel_records + surrogate id + UNIQUE(vehicle_id, odm)).
 
 const DB_NAME = 'fuel.db';
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 9;
 
 let db: SQLite.SQLiteDatabase | null = null;
 
@@ -57,6 +57,54 @@ export async function ensureMigrated(database: SQLite.SQLiteDatabase): Promise<v
       );
       CREATE INDEX IF NOT EXISTS idx_tunnel_vehicle_date
         ON tunnel_records (vehicle_id, date);
+      CREATE TABLE IF NOT EXISTS parking_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        carpark TEXT NOT NULL,
+        rental_type INTEGER NOT NULL,
+        fee REAL NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS idx_parking_vehicle_date
+        ON parking_records (vehicle_id, date);
+      CREATE TABLE IF NOT EXISTS fine_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        offences TEXT NOT NULL DEFAULT '[]',
+        custom_offence TEXT,
+        location TEXT,
+        penalty REAL NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS idx_fine_vehicle_date
+        ON fine_records (vehicle_id, date);
+      CREATE TABLE IF NOT EXISTS service_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        odm INTEGER NOT NULL,
+        items TEXT NOT NULL DEFAULT '[]',
+        custom_item TEXT,
+        price REAL NOT NULL DEFAULT 0,
+        UNIQUE (vehicle_id, odm)
+      );
+      CREATE TABLE IF NOT EXISTS insurance_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        type INTEGER NOT NULL,
+        broker TEXT,
+        fee REAL NOT NULL DEFAULT 0,
+        UNIQUE (vehicle_id, date)
+      );
+      CREATE TABLE IF NOT EXISTS licence_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        type INTEGER NOT NULL,
+        fee REAL NOT NULL DEFAULT 0,
+        UNIQUE (vehicle_id, date)
+      );
     `);
   }
   if (version < 2) {
@@ -108,6 +156,75 @@ export async function ensureMigrated(database: SQLite.SQLiteDatabase): Promise<v
       );
       CREATE INDEX IF NOT EXISTS idx_tunnel_vehicle_date
         ON tunnel_records (vehicle_id, date);
+    `);
+  }
+  if (version < 6) {
+    // v6: parking_records (no UNIQUE — multiple parks per day are normal).
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS parking_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        carpark TEXT NOT NULL,
+        rental_type INTEGER NOT NULL,
+        fee REAL NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS idx_parking_vehicle_date
+        ON parking_records (vehicle_id, date);
+    `);
+  }
+  if (version < 7) {
+    // v7: fine_records (no UNIQUE — bad days happen).
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS fine_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        offences TEXT NOT NULL DEFAULT '[]',
+        custom_offence TEXT,
+        location TEXT,
+        penalty REAL NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS idx_fine_vehicle_date
+        ON fine_records (vehicle_id, date);
+    `);
+  }
+  if (version < 8) {
+    // v8: service_records (UNIQUE(vehicle_id, odm) like fuel).
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS service_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        odm INTEGER NOT NULL,
+        items TEXT NOT NULL DEFAULT '[]',
+        custom_item TEXT,
+        price REAL NOT NULL DEFAULT 0,
+        UNIQUE (vehicle_id, odm)
+      );
+    `);
+  }
+  if (version < 9) {
+    // v9: insurance_records + licence_records (UNIQUE(vehicle_id, date) —
+    // one policy/licence per start date).
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS insurance_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        type INTEGER NOT NULL,
+        broker TEXT,
+        fee REAL NOT NULL DEFAULT 0,
+        UNIQUE (vehicle_id, date)
+      );
+      CREATE TABLE IF NOT EXISTS licence_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        date TEXT NOT NULL,
+        type INTEGER NOT NULL,
+        fee REAL NOT NULL DEFAULT 0,
+        UNIQUE (vehicle_id, date)
+      );
     `);
   }
   if (version < SCHEMA_VERSION) {

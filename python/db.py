@@ -55,6 +55,54 @@ CREATE TABLE IF NOT EXISTS tunnel_records (
 );
 CREATE INDEX IF NOT EXISTS idx_tunnel_vehicle_date
     ON tunnel_records (vehicle_id, date);
+CREATE TABLE IF NOT EXISTS parking_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    carpark TEXT NOT NULL,
+    rental_type INTEGER NOT NULL,
+    fee REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_parking_vehicle_date
+    ON parking_records (vehicle_id, date);
+CREATE TABLE IF NOT EXISTS fine_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    offences TEXT NOT NULL DEFAULT '[]',
+    custom_offence TEXT,
+    location TEXT,
+    penalty REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_fine_vehicle_date
+    ON fine_records (vehicle_id, date);
+CREATE TABLE IF NOT EXISTS service_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odm INTEGER NOT NULL,
+    items TEXT NOT NULL DEFAULT '[]',
+    custom_item TEXT,
+    price REAL NOT NULL DEFAULT 0,
+    UNIQUE (vehicle_id, odm)
+);
+CREATE TABLE IF NOT EXISTS insurance_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    type INTEGER NOT NULL,
+    broker TEXT,
+    fee REAL NOT NULL DEFAULT 0,
+    UNIQUE (vehicle_id, date)
+);
+CREATE TABLE IF NOT EXISTS licence_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    type INTEGER NOT NULL,
+    fee REAL NOT NULL DEFAULT 0,
+    UNIQUE (vehicle_id, date)
+);
 """
 
 # Existing files predate the type column (immutably set at creation);

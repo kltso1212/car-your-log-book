@@ -310,6 +310,7 @@ table tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin: 20px 0;
 }
 
 .add-button {
@@ -423,6 +424,189 @@ table tbody tr:hover {
   margin: 0;
   text-align: center;
   color: var(--text-muted);
+}
+
+/* One-tap suggestion chips (frequently-used carparks). */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  background-color: #f1f3f5;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dark);
+}
+
+.chip:hover {
+  background-color: var(--accent-blue-hover);
+  color: #ffffff;
+}
+
+.chip.active {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* Checkbox list for pre-defined catalogue items. */
+.check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background-color: var(--bg-card);
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.check-item input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+/* Item-selection dialog (service / offence picker popup). */
+.picker-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.selected-bubbles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 46px;
+  padding: 8px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background-color: var(--bg-light);
+  text-align: left;
+}
+
+.bubbles-empty {
+  color: var(--text-muted);
+  font-size: 14px;
+  align-self: center;
+}
+
+.bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  background-color: #e7f5ff;
+  border: 1px solid #a5d8ff;
+  border-radius: 14px;
+  padding: 4px 6px 4px 10px;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.bubble-custom {
+  background-color: #fff4e6;
+  border-color: #ffd8a8;
+}
+
+.bubble-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bubble-remove {
+  background: none;
+  border: none;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.bubble-remove:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: var(--text-dark);
+}
+
+.picker-group-list {
+  max-height: 300px;
+}
+
+.picker-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.picker-group-title {
+  font-size: 14px;
+  color: var(--text-dark);
+  margin-top: 4px;
+  text-align: left;
+}
+
+/* Two-column checkbox grid so rows don't stretch full-width. */
+.picker-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+}
+
+.picker-group-list .check-item {
+  justify-content: flex-start;
+  text-align: left;
+  min-width: 0;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.picker-notice {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+@media (max-width: 420px) {
+  .picker-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+.other-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.other-row input {
+  flex: 1;
+  max-width: none;
 }
 
 @media (min-width: 769px) {

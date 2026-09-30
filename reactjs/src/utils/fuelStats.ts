@@ -2,8 +2,8 @@ import { compareFuelByDateAsc } from './fuelSort';
 import type { FuelRecord } from '../types';
 
 // Shared vehicle stats for the 總覽 page (web + same formula as android).
-// maxOdm spans fuel AND charge records (electric vehicles only have the
-// latter); fold service records in here once that page has a data layer.
+// maxOdm spans fuel, charge AND service records (electric vehicles only
+// have charge records).
 
 export function maxOdm(records: Array<{ odm: number }>): number {
   return records.reduce((max, r) => Math.max(max, r.odm), 0);

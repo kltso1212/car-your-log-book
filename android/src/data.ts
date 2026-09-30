@@ -24,6 +24,12 @@ export const fuelTypes: Option[] = [
   { en: 'Diesel', tc: '柴油' },
 ];
 
+// Rental type: 1 時租 / 2 月租.
+export const rentalTypes: Option[] = [
+  { en: 'Hourly', tc: '時租' },
+  { en: 'Monthly', tc: '月租' },
+];
+
 /** Index reserved for diesel vehicles (locked, not selectable). */
 export const DIESEL_FUEL_TYPE = 2;
 
