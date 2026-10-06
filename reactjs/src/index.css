@@ -269,6 +269,7 @@ table tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin: 20px 0;
 }
 
 .summary-row {
@@ -302,6 +303,70 @@ table tbody tr:hover {
 }
 
 .summary-row dd.placeholder {
+  color: var(--text-muted);
+}
+
+/* Expiry within 30 days (or overdue): red alert text. */
+.expiry-alert {
+  color: #d6336c;
+  font-weight: 600;
+}
+
+/* Calendar reminder buttons beside an expiry date (summary + record pages). */
+.cal-buttons {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.cal-buttons .icon-button {
+  min-width: 36px;
+  height: 36px;
+  font-size: 17px;
+}
+
+/* Method picker inside the calendar reminder dialog. */
+.cal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  text-align: left;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-light);
+  color: var(--text-dark);
+  font-weight: 400;
+}
+
+.cal-item:hover {
+  border-color: var(--accent-blue);
+  color: var(--text-dark);
+}
+
+.cal-item-label {
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.cal-item-hint {
+  font-size: 13px;
   color: var(--text-muted);
 }
 

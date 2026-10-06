@@ -1,5 +1,6 @@
 """SQLite via stdlib sqlite3 (no server, zero dependencies). One file, zero-config:
-SQLITE_PATH points at the db file (shared /data volume in compose).
+Local default is the repo-root sqlite.db (shared across backends);
+in compose SQLITE_PATH=/data/sqlite.db (shared volume) overrides it.
 
 Same rows()/execute() shapes as before; only the placeholders changed
 (%s -> ?) and UNIQUE violations surface as sqlite3.IntegrityError.
@@ -10,10 +11,11 @@ import sqlite3
 import threading
 
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 
-DB_PATH = os.getenv("SQLITE_PATH", "./fuel.db")
+DB_PATH = os.getenv("SQLITE_PATH", str(Path(__file__).resolve().parent.parent / "sqlite.db"))
 
 _lock = threading.RLock()
 _db: sqlite3.Connection | None = None

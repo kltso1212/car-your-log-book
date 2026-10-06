@@ -80,7 +80,7 @@ export default function VehicleSelect() {
         <option key="selectYourVehicle" value="">-- 選擇您的座駕 --</option>
         {vehicles.map(v => (
           <option key={v.id} value={v.id}>
-            {v.id} · {vehicleTypes.find(t => t.id === v.type)?.tc ?? ''}
+            {v.id}
           </option>
         ))}
       </select>

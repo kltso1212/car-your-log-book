@@ -1,0 +1,50 @@
+# Rendered by the nginx:alpine entrypoint (envsubst) on container start.
+# BACKEND_UPSTREAM defaults to the compose service name; override per environment:
+#   compose single-origin: http://backend-node:5000 (default, nothing to do)
+#   cloud single-service:  http://127.0.0.1:5000 (backend sidecar in same pod/task)
+# Only used when the frontend was built with REACT_APP_API_URL=/api.
+# The default direct mode (REACT_APP_API_URL=http://localhost:5000) bypasses
+# this proxy entirely, so it is safe to leave in place.
+#
+# NOTE: the backend is referenced via a variable + resolver (not a static
+# proxy_pass URL) so nginx starts even when the hostname does not resolve
+# yet (standalone docker run, slow DNS, sidecar still booting). Requests then
+# fail with 502 until the backend is reachable, instead of nginx exiting.
+# NOTE: plain ${VAR} only — the nginx:alpine envsubst does not understand
+# ${VAR:-default}. Defaults come from ENV in the Dockerfile.
+resolver ${NGINX_RESOLVER} valid=30s ipv6=off;
+server {
+  listen 80;
+  root /usr/share/nginx/html;
+  index index.html;
+
+  set $backend_upstream ${BACKEND_UPSTREAM};
+
+  # API goes to the backend, original /api/... path preserved.
+  location /api/ {
+    proxy_pass $backend_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+  # Liveness probe (proxy_pass with a variable cannot carry a URI path,
+  # hence the rewrite).
+  location = /health {
+    rewrite ^ /health break;
+    proxy_pass $backend_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+  }
+
+  # SPA fallback so react-router deep links work on refresh.
+  # index.html itself must NEVER be cached: it points at the hashed
+  # /static/* bundles, so a stale index.html = stale app after each deploy.
+  location = /index.html {
+    add_header Cache-Control "no-store" always;
+  }
+  location / {
+    try_files $uri /index.html;
+  }
+}

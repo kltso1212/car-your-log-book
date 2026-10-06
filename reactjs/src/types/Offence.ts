@@ -13,7 +13,6 @@ export const offenceItems: Record<number, OffenceItem> = {
   302: { id: 302, tc: '超速駕駛' },
   303: { id: 303, tc: '衝紅燈' },
   304: { id: 304, tc: '不小心駕駛' },
-  305: { id: 305, tc: '危險駕駛', deprecated: true },
 };
 
 export const offenceIds: number[] = [301, 302, 303, 304];

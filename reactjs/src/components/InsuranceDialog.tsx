@@ -18,13 +18,13 @@ export default function InsuranceDialog({
   const { currentVehicle } = useContext(VehicleContext);
   const { insuranceRecords, setInsuranceRecords } = useContext(InsuranceRecordContext);
   const [date, setDate] = useState('');
-  const [type, setType] = useState(2);
+  const [type, setType] = useState(1);
   const [broker, setBroker] = useState('');
   const [fee, setFee] = useState('');
 
   useEffect(() => {
     setDate(initial?.date ?? '');
-    setType(initial?.type ?? 2);
+    setType(initial?.type ?? 1);
     setBroker(initial?.broker ?? '');
     setFee(initial ? String(initial.fee) : '');
   }, [initial]);

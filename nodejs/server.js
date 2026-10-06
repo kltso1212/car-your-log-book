@@ -15,12 +15,14 @@ if (CORS_ORIGIN === '' || CORS_ORIGIN === '*') {
 }
 app.use(express.json());
 
+// Liveness probe for Docker / Cloud Run / Render / Railway health checks.
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 // Vehicle type: 1 petrol / 2 hybrid / 3 electric / 4 diesel.
 // Set once at creation; no update endpoint exists so it is immutable.
 const VALID_VEHICLE_TYPES = [1, 2, 3, 4];
 
 app.get('/api/vehicles', async (req, res) => {
-    console.log('GET api/vehicles');
     const { rows } = await db.query(
         `SELECT id, CAST(type AS INTEGER) AS type
         FROM vehicles 
@@ -34,7 +36,6 @@ app.post('/api/vehicles', async (req, res) => {
     if (!VALID_VEHICLE_TYPES.includes(vehicleType)) {
         return res.status(400).json({ message: '車輛類別無效' });
     }
-    console.log(`POST api/vehicles ${JSON.stringify(req.body)}`);
     try {
         await db.query(
             `INSERT INTO vehicles (id, type) 
@@ -48,7 +49,6 @@ app.post('/api/vehicles', async (req, res) => {
 
 app.delete('/api/vehicles/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`DELETE api/vehicles/${id}`);
     await db.query(
         `DELETE FROM vehicles 
         WHERE id=$1`, [id]);
@@ -57,7 +57,6 @@ app.delete('/api/vehicles/:id', async (req, res) => {
 
 app.get('/api/fuelrecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/fuelrecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, odm, vendor, fuel_type AS "fuelType", litre, price, 
         COALESCE(price / NULLIF(litre, 0), 0) AS "pricePerLitre"
@@ -70,7 +69,6 @@ app.get('/api/fuelrecords/:id', async (req, res) => {
 app.post('/api/fuelrecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, odm, vendor, fuelType, litre, price } = req.body;
-    console.log(`POST api/fuelrecords/${id} ${JSON.stringify(req.body)}`);
     await db.query(
         `INSERT INTO fuel_records
         (vehicle_id, date, odm, vendor, fuel_type, litre, price)
@@ -82,7 +80,6 @@ app.post('/api/fuelrecords/:id', async (req, res) => {
 app.delete('/api/fuelrecords/:id', async (req, res) => {
     const { id } = req.params;
     const { odm } = req.query;
-    console.log(`DELETE api/fuelrecords/${id} ${JSON.stringify(req.query)}`);
     await db.query(
         `DELETE FROM fuel_records 
         WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
@@ -92,7 +89,6 @@ app.delete('/api/fuelrecords/:id', async (req, res) => {
 app.put('/api/fuelrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
     const { date, odm, vendor, fuelType, litre, price } = req.body;
-    console.log(`PUT api/fuelrecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
     try {
         const result = await db.query(
             `UPDATE fuel_records
@@ -111,7 +107,6 @@ app.put('/api/fuelrecords/:vehicleId/:recordId', async (req, res) => {
 // UNIQUE(vehicle_id, odm) like fuel — one service per mileage point.
 app.get('/api/servicerecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/servicerecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, odm, items, custom_item AS "customItem", price
         FROM service_records
@@ -122,7 +117,6 @@ app.get('/api/servicerecords/:id', async (req, res) => {
 // No UNIQUE constraint; deletes key on the surrogate id.
 app.get('/api/finerecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/finerecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, offences, custom_offence AS "customOffence", location, penalty
         FROM fine_records
@@ -134,7 +128,6 @@ app.get('/api/finerecords/:id', async (req, res) => {
 app.post('/api/finerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, offences, customOffence, location, penalty } = req.body;
-    console.log(`POST api/finerecords/${id} ${JSON.stringify(req.body)}`);
     const result = await db.query(
         `INSERT INTO fine_records
         (vehicle_id, date, offences, custom_offence, location, penalty)
@@ -146,7 +139,6 @@ app.post('/api/finerecords/:id', async (req, res) => {
 
 app.delete('/api/finerecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
-    console.log(`DELETE api/finerecords/${vehicleId}/${recordId}`);
     await db.query(
         `DELETE FROM fine_records
         WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -156,7 +148,6 @@ app.delete('/api/finerecords/:vehicleId/:recordId', async (req, res) => {
 app.put('/api/finerecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
     const { date, offences, customOffence, location, penalty } = req.body;
-    console.log(`PUT api/finerecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
     const result = await db.query(
         `UPDATE fine_records
         SET date=$1, offences=$2, custom_offence=$3, location=$4, penalty=$5
@@ -171,7 +162,6 @@ app.put('/api/finerecords/:vehicleId/:recordId', async (req, res) => {
 // deletes key on (vehicle, odm) like fuel too.
 app.get('/api/servicerecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/servicerecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, odm, items, custom_item AS "customItem", price
         FROM service_records
@@ -183,7 +173,6 @@ app.get('/api/servicerecords/:id', async (req, res) => {
 app.post('/api/servicerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, odm, items, customItem, price } = req.body;
-    console.log(`POST api/servicerecords/${id} ${JSON.stringify(req.body)}`);
     try {
         await db.query(
             `INSERT INTO service_records
@@ -200,7 +189,6 @@ app.post('/api/servicerecords/:id', async (req, res) => {
 app.delete('/api/servicerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { odm } = req.query;
-    console.log(`DELETE api/servicerecords/${id} ${JSON.stringify(req.query)}`);
     await db.query(
         `DELETE FROM service_records
         WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
@@ -210,7 +198,6 @@ app.delete('/api/servicerecords/:id', async (req, res) => {
 app.put('/api/servicerecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
     const { date, odm, items, customItem, price } = req.body;
-    console.log(`PUT api/servicerecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
     try {
         const result = await db.query(
             `UPDATE service_records
@@ -229,7 +216,6 @@ app.put('/api/servicerecords/:vehicleId/:recordId', async (req, res) => {
 // (multiple parks per day are normal); deletes key on the surrogate id.
 app.get('/api/parkingrecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/parkingrecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, carpark, rental_type AS "rentalType", fee
         FROM parking_records
@@ -241,7 +227,6 @@ app.get('/api/parkingrecords/:id', async (req, res) => {
 app.post('/api/parkingrecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, carpark, rentalType, fee } = req.body;
-    console.log(`POST api/parkingrecords/${id} ${JSON.stringify(req.body)}`);
     const result = await db.query(
         `INSERT INTO parking_records
         (vehicle_id, date, carpark, rental_type, fee)
@@ -253,7 +238,6 @@ app.post('/api/parkingrecords/:id', async (req, res) => {
 
 app.delete('/api/parkingrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
-    console.log(`DELETE api/parkingrecords/${vehicleId}/${recordId}`);
     await db.query(
         `DELETE FROM parking_records
         WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -263,7 +247,6 @@ app.delete('/api/parkingrecords/:vehicleId/:recordId', async (req, res) => {
 app.put('/api/parkingrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
     const { date, carpark, rentalType, fee } = req.body;
-    console.log(`PUT api/parkingrecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
     const result = await db.query(
         `UPDATE parking_records
         SET date=$1, carpark=$2, rental_type=$3, fee=$4
@@ -277,7 +260,6 @@ app.put('/api/parkingrecords/:vehicleId/:recordId', async (req, res) => {
 // for electric vehicles only (enforced in the frontends).
 app.get('/api/chargerecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/chargerecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, odm, kwh, price,
         COALESCE(price / NULLIF(kwh, 0), 0) AS "pricePerKwh"
@@ -290,7 +272,6 @@ app.get('/api/chargerecords/:id', async (req, res) => {
 app.post('/api/chargerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, odm, kwh, price } = req.body;
-    console.log(`POST api/chargerecords/${id} ${JSON.stringify(req.body)}`);
     try {
         await db.query(
             `INSERT INTO charge_records
@@ -307,7 +288,6 @@ app.post('/api/chargerecords/:id', async (req, res) => {
 app.delete('/api/chargerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { odm } = req.query;
-    console.log(`DELETE api/chargerecords/${id} ${JSON.stringify(req.query)}`);
     await db.query(
         `DELETE FROM charge_records
         WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
@@ -317,7 +297,6 @@ app.delete('/api/chargerecords/:id', async (req, res) => {
 app.put('/api/chargerecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
     const { date, odm, kwh, price } = req.body;
-    console.log(`PUT api/chargerecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
     try {
         const result = await db.query(
             `UPDATE charge_records
@@ -337,7 +316,6 @@ app.put('/api/chargerecords/:vehicleId/:recordId', async (req, res) => {
 // surrogate id instead of ?odm=.
 app.get('/api/tunnelrecords/:id', async (req, res) => {
     const { id } = req.params;
-    console.log(`GET api/tunnelrecords/${id}`);
     const { rows } = await db.query(
         `SELECT id, date, tunnel, bound, fee
         FROM tunnel_records
@@ -349,7 +327,6 @@ app.get('/api/tunnelrecords/:id', async (req, res) => {
 app.post('/api/tunnelrecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, tunnel, bound, fee } = req.body;
-    console.log(`POST api/tunnelrecords/${id} ${JSON.stringify(req.body)}`);
     const result = await db.query(
         `INSERT INTO tunnel_records
         (vehicle_id, date, tunnel, bound, fee)
@@ -361,7 +338,6 @@ app.post('/api/tunnelrecords/:id', async (req, res) => {
 
 app.delete('/api/tunnelrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
-    console.log(`DELETE api/tunnelrecords/${vehicleId}/${recordId}`);
     await db.query(
         `DELETE FROM tunnel_records
         WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -371,7 +347,6 @@ app.delete('/api/tunnelrecords/:vehicleId/:recordId', async (req, res) => {
 app.put('/api/tunnelrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
     const { date, tunnel, bound, fee } = req.body;
-    console.log(`PUT api/tunnelrecords/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
     const result = await db.query(
         `UPDATE tunnel_records
         SET date=$1, tunnel=$2, bound=$3, fee=$4
@@ -388,7 +363,6 @@ const datedRecordRoutes = (name, table, addedMsg, updatedMsg, notFoundMsg, colum
     const placeholders = (i, n) => Array.from({ length: n }, (_, k) => `$${i + k}`).join(', ');
     app.get(`/api/${name}/:id`, async (req, res) => {
         const { id } = req.params;
-        console.log(`GET api/${name}/${id}`);
         const { rows } = await db.query(
             `SELECT id, ${cols}
             FROM ${table}
@@ -398,7 +372,6 @@ const datedRecordRoutes = (name, table, addedMsg, updatedMsg, notFoundMsg, colum
     });
     app.post(`/api/${name}/:id`, async (req, res) => {
         const { id } = req.params;
-        console.log(`POST api/${name}/${id} ${JSON.stringify(req.body)}`);
         try {
             const vals = columns.map(c => req.body[c] ?? null);
             const result = await db.query(
@@ -414,7 +387,6 @@ const datedRecordRoutes = (name, table, addedMsg, updatedMsg, notFoundMsg, colum
     });
     app.delete(`/api/${name}/:vehicleId/:recordId`, async (req, res) => {
         const { vehicleId, recordId } = req.params;
-        console.log(`DELETE api/${name}/${vehicleId}/${recordId}`);
         await db.query(
             `DELETE FROM ${table}
             WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -422,7 +394,6 @@ const datedRecordRoutes = (name, table, addedMsg, updatedMsg, notFoundMsg, colum
     });
     app.put(`/api/${name}/:vehicleId/:recordId`, async (req, res) => {
         const { vehicleId, recordId } = req.params;
-        console.log(`PUT api/${name}/${vehicleId}/${recordId} ${JSON.stringify(req.body)}`);
         try {
             const sets = columns.map((c, k) => `${c}=$${k + 1}`).join(', ');
             const vals = columns.map(c => req.body[c] ?? null);

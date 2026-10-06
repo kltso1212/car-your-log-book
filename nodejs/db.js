@@ -4,11 +4,12 @@ const fs = require('fs');
 const path = require('path');
 
 // SQLite via node:sqlite (stdlib, no pg dependency). One file, zero-config:
-// SQLITE_PATH points at the db file (shared /data volume in compose).
+// Local default is the repo-root sqlite.db (shared across backends);
+// in compose SQLITE_PATH=/data/sqlite.db (shared volume) overrides it.
 // Same query(text, params) shape as before so server.js is untouched,
 // except $1-placeholders become ? for SQLite.
 
-const dbPath = process.env.SQLITE_PATH || './fuel.db';
+const dbPath = process.env.SQLITE_PATH || path.join(__dirname, '..', 'sqlite.db');
 fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
 
 const db = new DatabaseSync(dbPath);
@@ -115,7 +116,6 @@ const uniqueError = () => {
 };
 
 const query = async (text, params = []) => {
-    console.log(text, params);
     const sql = toQuestionMarks(text);
     const trimmed = sql.trim().toUpperCase();
     try {

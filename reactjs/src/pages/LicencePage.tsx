@@ -1,12 +1,14 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import { getLicenceRecords, type LicenceRecord } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { LicenceRecordContext } from '../contexts/LicenceRecordContext';
 import LicenceTable from '../components/LicenceTable';
 import LicenceCards from '../components/LicenceCards';
 import LicenceDialog from '../components/LicenceDialog';
+import CalendarButtons from '../components/CalendarButtons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { compareLicenceByDateDesc } from '../utils/licenceSort';
+import { licenceExpiry, isExpiringSoon } from '../utils/expiry';
 
 type DialogState = { mode: 'closed' } | { mode: 'insert' } | { mode: 'edit'; record: LicenceRecord };
 
@@ -34,9 +36,24 @@ export default function LicencePage() {
       .finally(() => setLoading(false));
   }, [currentVehicle]);
 
+  // Same expiry the 總覽 page shows (latest record + term − 1 day),
+  // displayed here like the 平均油耗 line on the fuel page.
+  const licenceDue = useMemo(() => licenceExpiry(licenceRecords), [licenceRecords]);
+
   return (
     <LicenceRecordContext.Provider value={{ licenceRecords, setLicenceRecords }}>
       <div>
+        {!loading && licenceDue && (
+          <p className={isExpiringSoon(licenceDue) ? 'expiry-alert' : undefined}>
+            {isExpiringSoon(licenceDue) && '⚠️ '}牌費到期日：{licenceDue}{' '}
+            <CalendarButtons
+              title={`牌費到期：${currentVehicle}`}
+              date={licenceDue}
+              filename={`牌費到期-${currentVehicle}`}
+              description={`車輛 ${currentVehicle} 牌費到期日 ${licenceDue}，請續牌。`}
+            />
+          </p>
+        )}
         {!loading && (
           <button className="add-button" onClick={() => setDialog({ mode: 'insert' })}>➕ 新增牌費記錄</button>
         )}

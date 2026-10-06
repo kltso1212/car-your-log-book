@@ -34,10 +34,15 @@
   margin: 8px 0;
   font-size: clamp(20px, 5vw, 32px);
 }
-
 .App-header p {
   margin: 0 0 8px;
   font-size: clamp(13px, 3.5vw, 18px);
+}
+
+.App-footer p {
+  margin: 0 0 8px;
+  font-size: clamp(13px, 3.5vw, 14px);
+  color: grey;
 }
 
 .App-link {

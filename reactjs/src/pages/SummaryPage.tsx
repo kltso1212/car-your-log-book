@@ -14,7 +14,8 @@ import { VehicleContext } from '../contexts/VehicleContext';
 import { ELECTRIC_TYPE } from '../types/Page';
 import { vehicleTypeOf } from '../types/Vehicle';
 import { averageConsumption, averagePowerConsumption, maxOdmRecord } from '../utils/fuelStats';
-import { insuranceExpiry, licenceExpiry } from '../utils/expiry';
+import { insuranceExpiry, licenceExpiry, isExpiringSoon } from '../utils/expiry';
+import CalendarButtons from '../components/CalendarButtons';
 import type { FuelRecord } from '../types';
 
 // 總覽: per-vehicle dashboard. Expiry dates compute from the latest
@@ -99,11 +100,45 @@ export default function SummaryPage() {
       </div>
       <div className="summary-row">
         <dt>保險到期日</dt>
-        <dd className={insuranceDue ? undefined : 'placeholder'}>{insuranceDue || '尚未設定'}</dd>
+        <dd className={insuranceDue ? (isExpiringSoon(insuranceDue) ? 'expiry-alert' : undefined) : 'placeholder'}>
+          {insuranceDue ? (
+            <>
+              {isExpiringSoon(insuranceDue) && '⚠️ '}
+              {insuranceDue}
+            </>
+          ) : (
+            '尚未設定'
+          )}
+          {insuranceDue && (
+            <CalendarButtons
+              title={`保險到期：${currentVehicle}`}
+              date={insuranceDue}
+              filename={`保險到期-${currentVehicle}`}
+              description={`車輛 ${currentVehicle} 保險到期日 ${insuranceDue}，請續保。`}
+            />
+          )}
+        </dd>
       </div>
       <div className="summary-row">
         <dt>牌費到期日</dt>
-        <dd className={licenceDue ? undefined : 'placeholder'}>{licenceDue || '尚未設定'}</dd>
+        <dd className={licenceDue ? (isExpiringSoon(licenceDue) ? 'expiry-alert' : undefined) : 'placeholder'}>
+          {licenceDue ? (
+            <>
+              {isExpiringSoon(licenceDue) && '⚠️ '}
+              {licenceDue}
+            </>
+          ) : (
+            '尚未設定'
+          )}
+          {licenceDue && (
+            <CalendarButtons
+              title={`牌費到期：${currentVehicle}`}
+              date={licenceDue}
+              filename={`牌費到期-${currentVehicle}`}
+              description={`車輛 ${currentVehicle} 牌費到期日 ${licenceDue}，請續牌。`}
+            />
+          )}
+        </dd>
       </div>
     </dl>
   );

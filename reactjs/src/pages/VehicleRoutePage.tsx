@@ -56,7 +56,7 @@ export default function VehicleRoutePage() {
 
   return (
     <div>
-      {decodedId && <h1>{decodedId}的{Page(slugIndex) ?? ''}記錄</h1>}
+      {decodedId && <h1>{decodedId}{slugIndex === 0 ? '' : `的${Page(slugIndex) ?? ''}記錄`}</h1>}
       {slug === 'fuel' ? (
         <FuelRecordPage />
       ) : slug === 'charge' ? (

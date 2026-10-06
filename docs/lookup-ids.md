@@ -7,7 +7,7 @@ lookups — currently unused). `Y` = category (`0` = flat, no sub-categories;
 
 Rules: append-only (deprecate, never reuse ids); unknown ids render as
 `項目 #id`, never crash; each codebase copies this file verbatim into its
-constants (`reactjs/src/types/*`, `android/src/*`).
+constants (`reactjs/src/types/*`).
 
 ## Vehicle type (separate small-int domain, NOT xyz)
 
@@ -88,6 +88,5 @@ column next to the int array.
 | 302 | 超速駕駛 |
 | 303 | 衝紅燈 |
 | 304 | 不小心駕駛 |
-| 305 | 危險駕駛 (deprecated — hidden from picker, kept for history) |
 
 Free-text extras go in `custom_offence`, same pattern as service items.

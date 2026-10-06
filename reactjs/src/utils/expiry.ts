@@ -42,4 +42,14 @@ export function licenceExpiry(records: Array<{ date: string; type: number }>): s
   return shiftDays(shiftMonths(latest.date, latest.type === 1 ? 4 : 12), -1);
 }
 
+// True when the expiry date is within `withinDays` (default 30) from today,
+// overdue dates included — the summary and record pages render those in red.
+export function isExpiringSoon(iso: string, withinDays = 30): boolean {
+  if (!iso) return false;
+  const today = toISODate(new Date());
+  const due = parseISODate(iso).getTime();
+  const limit = parseISODate(shiftDays(today, withinDays)).getTime();
+  return due <= limit;
+}
+
 export type { InsuranceRecord, LicenceRecord };
