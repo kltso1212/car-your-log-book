@@ -16,13 +16,11 @@ def _is_unique_violation(err: Exception) -> bool:
 
 @router.get("", response_model=list[VehicleOut])
 def list_vehicles():
-    print("GET api/vehicles")
     return db.rows("SELECT id, type FROM vehicles ORDER BY id")
 
 
 @router.post("", response_model=Message)
 def add_vehicle(body: VehicleIn):
-    print(f"POST api/vehicles {body.model_dump_json()}")
     if body.type not in (1, 2, 3, 4):
         return Response(
             content=Message(message="車輛類別無效").model_dump_json(),
@@ -44,6 +42,5 @@ def add_vehicle(body: VehicleIn):
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_vehicle(vehicle_id: str):
-    print(f"DELETE api/vehicles/{vehicle_id}")
     db.execute("DELETE FROM vehicles WHERE id=?", (vehicle_id,))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

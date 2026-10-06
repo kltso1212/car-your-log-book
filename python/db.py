@@ -134,7 +134,6 @@ def _conn() -> sqlite3.Connection:
 
 
 def rows(query: str, params: tuple = ()) -> list[dict]:
-    print(query, params)
     with _lock:
         cur = _conn().execute(query, params)
         result = [dict(r) for r in cur.fetchall()]
@@ -143,7 +142,6 @@ def rows(query: str, params: tuple = ()) -> list[dict]:
 
 
 def execute(query: str, params: tuple = ()) -> None:
-    print(query, params)
     with _lock:
         try:
             _conn().execute(query, params)
@@ -155,7 +153,6 @@ def execute(query: str, params: tuple = ()) -> None:
 
 def insert(query: str, params: tuple = ()) -> int:
     """INSERT returning the new row id (for endpoints that echo it back)."""
-    print(query, params)
     with _lock:
         try:
             cur = _conn().execute(query, params)

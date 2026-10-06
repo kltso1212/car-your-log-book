@@ -35,7 +35,7 @@ const api = axios.create({
 });
 
 export const getVehicles = async () => {
-  return api.get<{ id: string; type: number }[]>('/api/vehicles/');
+  return api.get<{ id: string; type: number }[]>('/api/vehicles');
 };
 
 export const addVehicle = async (id: string, type: VehicleType = 1) => {

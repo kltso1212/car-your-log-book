@@ -18,13 +18,11 @@ _LIST_SQL = """
 
 @router.get("/{vehicle_id}", response_model=list[ParkingRecordOut])
 def list_records(vehicle_id: str):
-    print(f"GET api/parkingrecords/{vehicle_id}")
     return db.rows(_LIST_SQL, (vehicle_id,))
 
 
 @router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
 def add_record(vehicle_id: str, body: ParkingRecordIn):
-    print(f"POST api/parkingrecords/{vehicle_id} {body.model_dump_json()}")
     new_id = db.insert(
         """INSERT INTO parking_records
         (vehicle_id, date, carpark, rental_type, fee)
@@ -36,14 +34,12 @@ def add_record(vehicle_id: str, body: ParkingRecordIn):
 
 @router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: str, record_id: int):
-    print(f"DELETE api/parkingrecords/{vehicle_id}/{record_id}")
     db.execute("DELETE FROM parking_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{vehicle_id}/{record_id}", response_model=Message)
 def update_record(vehicle_id: str, record_id: int, body: ParkingRecordIn):
-    print(f"PUT api/parkingrecords/{vehicle_id}/{record_id} {body.model_dump_json()}")
     existing = db.rows("SELECT id FROM parking_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     if not existing:
         return Response(

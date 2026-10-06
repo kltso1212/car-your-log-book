@@ -31,13 +31,11 @@ def _decode(rows: list[dict]) -> list[dict]:
 
 @router.get("/{vehicle_id}", response_model=list[FineRecordOut])
 def list_records(vehicle_id: str):
-    print(f"GET api/finerecords/{vehicle_id}")
     return _decode(db.rows(_LIST_SQL, (vehicle_id,)))
 
 
 @router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
 def add_record(vehicle_id: str, body: FineRecordIn):
-    print(f"POST api/finerecords/{vehicle_id} {body.model_dump_json()}")
     new_id = db.insert(
         """INSERT INTO fine_records
         (vehicle_id, date, offences, custom_offence, location, penalty)
@@ -50,14 +48,12 @@ def add_record(vehicle_id: str, body: FineRecordIn):
 
 @router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: str, record_id: int):
-    print(f"DELETE api/finerecords/{vehicle_id}/{record_id}")
     db.execute("DELETE FROM fine_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{vehicle_id}/{record_id}", response_model=Message)
 def update_record(vehicle_id: str, record_id: int, body: FineRecordIn):
-    print(f"PUT api/finerecords/{vehicle_id}/{record_id} {body.model_dump_json()}")
     existing = db.rows("SELECT id FROM fine_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     if not existing:
         return Response(

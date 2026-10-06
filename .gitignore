@@ -13,3 +13,11 @@ __pycache__/
 
 # Logs
 *.log
+
+# Local env overrides (backend .env files are tracked templates; anything
+# else named .env — e.g. root .env with real secrets — stays untracked).
+.env
+
+# IDE / tooling output
+tsconfig-resolved.json
+*.csproj.user
