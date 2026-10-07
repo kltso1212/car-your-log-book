@@ -20,7 +20,7 @@ namespace dotnet.Models
         public string Items { get; set; } = "[]";
         public string? CustomItem { get; set; }
         public double Price { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public ServiceRecord() { }
         public ServiceRecord(ServiceRecordDto data)

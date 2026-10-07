@@ -4,11 +4,11 @@ namespace dotnet.Services
 {
     public interface IChargeRecordService
     {
-        Task<IEnumerable<ChargeRecordDto>> GetAllAsync(string vehicleId);
-        Task<ChargeRecord?> GetByOdmAsync(string vehicleId, int odm);
-        Task<bool> AddAsync(string vehicleId, ChargeRecordDto req);
-        Task<bool> DeleteByOdmAsync(string vehicleId, int odm);
-        Task<UpdateOutcome> UpdateAsync(string vehicleId, long id, ChargeRecordDto req);
+        Task<IEnumerable<ChargeRecordDto>> GetAllAsync(int vehicleId);
+        Task<ChargeRecord?> GetByOdmAsync(int vehicleId, int odm);
+        Task<bool> AddAsync(int vehicleId, ChargeRecordDto req);
+        Task<bool> DeleteByOdmAsync(int vehicleId, int odm);
+        Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, ChargeRecordDto req);
     }
 
     public class ChargeRecordService : IChargeRecordService
@@ -20,19 +20,19 @@ namespace dotnet.Services
         }
         public IEnumerable<Vehicle> Vehicles => _context.Vehicles;
         public IEnumerable<ChargeRecord> ChargeRecords => _context.ChargeRecords;
-        public async Task<IEnumerable<ChargeRecordDto>> GetAllAsync(string vehicleId)
+        public async Task<IEnumerable<ChargeRecordDto>> GetAllAsync(int vehicleId)
         {
             return await Task.Run(() => ChargeRecords
                 .Where(f => f.VehicleId == vehicleId)
                 .OrderBy(f => f.Odm)
                 .Select(f => f.Data).ToList());
         }
-        public async Task<ChargeRecord?> GetByOdmAsync(string vehicleId, int odm)
+        public async Task<ChargeRecord?> GetByOdmAsync(int vehicleId, int odm)
         {
             return await Task.Run(() => ChargeRecords
                 .Where(f => f.VehicleId == vehicleId && f.Odm == odm).FirstOrDefault());
         }
-        public async Task<bool> AddAsync(string vehicleId, ChargeRecordDto req)
+        public async Task<bool> AddAsync(int vehicleId, ChargeRecordDto req)
         {
             var vehicle = await Task.Run(() => Vehicles.Where(v => v.Id == vehicleId).FirstOrDefault());
             if (vehicle is null) return false;
@@ -43,7 +43,7 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> DeleteByOdmAsync(string vehicleId, int odm)
+        public async Task<bool> DeleteByOdmAsync(int vehicleId, int odm)
         {
             var record = await Task.Run(() => ChargeRecords
                 .Where(f => f.VehicleId == vehicleId && f.Odm == odm).FirstOrDefault());
@@ -53,7 +53,7 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<UpdateOutcome> UpdateAsync(string vehicleId, long id, ChargeRecordDto req)
+        public async Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, ChargeRecordDto req)
         {
             var record = await Task.Run(() => ChargeRecords
                 .Where(f => f.Id == id && f.VehicleId == vehicleId).FirstOrDefault());

@@ -326,6 +326,15 @@ table tbody tr:hover {
   font-size: 17px;
 }
 
+/* Edit button on the one-line summary title "{plate} {brand} {model} {year}". */
+h1 .icon-button {
+  min-width: 36px;
+  height: 36px;
+  font-size: 17px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 /* Method picker inside the calendar reminder dialog. */
 .cal-list {
   display: flex;

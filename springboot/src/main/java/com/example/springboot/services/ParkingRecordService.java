@@ -27,14 +27,14 @@ public class ParkingRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<ParkingRecordDto> getAll(String vehicleId) {
+    public List<ParkingRecordDto> getAll(Integer vehicleId) {
         return parkingRecords.findByVehicleIdOrderByDateDescIdDesc(vehicleId).stream()
                 .map(ParkingRecordDto::from)
                 .toList();
     }
 
     @Transactional
-    public Long add(String vehicleId, ParkingRecordDto.Request req) {
+    public Long add(Integer vehicleId, ParkingRecordDto.Request req) {
         if (req == null) return 0L;
         if (!vehicles.existsById(vehicleId)) return 0L;
         ParkingRecord r = new ParkingRecord();
@@ -47,7 +47,7 @@ public class ParkingRecordService {
     }
 
     @Transactional
-    public boolean deleteById(String vehicleId, long id) {
+    public boolean deleteById(Integer vehicleId, long id) {
         var existing = parkingRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         parkingRecords.delete(existing.get());
@@ -55,7 +55,7 @@ public class ParkingRecordService {
     }
 
     @Transactional
-    public UpdateResult update(String vehicleId, long id, ParkingRecordDto.Request req) {
+    public UpdateResult update(Integer vehicleId, long id, ParkingRecordDto.Request req) {
         if (req == null) return UpdateResult.NOT_FOUND;
         var existing = parkingRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return UpdateResult.NOT_FOUND;

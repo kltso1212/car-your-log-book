@@ -20,8 +20,13 @@ namespace dotnet.Models
             {
                 entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.Id).HasColumnType("TEXT").HasColumnName("id");
+                entity.Property(e => e.Id).HasColumnType("INTEGER").HasColumnName("id")
+                    .ValueGeneratedOnAdd();
+                entity.Property(e => e.Plate).HasColumnType("TEXT").HasColumnName("plate");
                 entity.Property(e => e.Type).HasColumnType("INTEGER").HasColumnName("type");
+                entity.Property(e => e.Brand).HasColumnType("TEXT").HasColumnName("brand");
+                entity.Property(e => e.Model).HasColumnType("TEXT").HasColumnName("model");
+                entity.Property(e => e.Year).HasColumnType("INTEGER").HasColumnName("year");
 
                 entity.ToTable("vehicles");
             });
@@ -38,7 +43,7 @@ namespace dotnet.Models
                 entity.Property(e => e.FuelType).HasColumnType("INTEGER").HasColumnName("fuel_type");
                 entity.Property(e => e.Litre).HasColumnType("REAL").HasColumnName("litre");
                 entity.Property(e => e.Price).HasColumnType("REAL").HasColumnName("price");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.FuelRecords)
@@ -61,7 +66,7 @@ namespace dotnet.Models
                 entity.Property(e => e.Odm).HasColumnType("INTEGER").HasColumnName("odm");
                 entity.Property(e => e.Kwh).HasColumnType("REAL").HasColumnName("kwh");
                 entity.Property(e => e.Price).HasColumnType("REAL").HasColumnName("price");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.ChargeRecords)
@@ -83,7 +88,7 @@ namespace dotnet.Models
                 entity.Property(e => e.Tunnel).HasColumnType("INTEGER").HasColumnName("tunnel");
                 entity.Property(e => e.Bound).HasColumnType("INTEGER").HasColumnName("bound");
                 entity.Property(e => e.Fee).HasColumnType("REAL").HasColumnName("fee");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.TunnelRecords)
@@ -106,7 +111,7 @@ namespace dotnet.Models
                 entity.Property(e => e.Carpark).HasColumnType("TEXT").HasColumnName("carpark");
                 entity.Property(e => e.RentalType).HasColumnType("INTEGER").HasColumnName("rental_type");
                 entity.Property(e => e.Fee).HasColumnType("REAL").HasColumnName("fee");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.ParkingRecords)
@@ -130,7 +135,7 @@ namespace dotnet.Models
                 entity.Property(e => e.CustomOffence).HasColumnType("TEXT").HasColumnName("custom_offence");
                 entity.Property(e => e.Location).HasColumnType("TEXT").HasColumnName("location");
                 entity.Property(e => e.Penalty).HasColumnType("REAL").HasColumnName("penalty");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.FineRecords)
@@ -154,7 +159,7 @@ namespace dotnet.Models
                 entity.Property(e => e.Items).HasColumnType("TEXT").HasColumnName("items");
                 entity.Property(e => e.CustomItem).HasColumnType("TEXT").HasColumnName("custom_item");
                 entity.Property(e => e.Price).HasColumnType("REAL").HasColumnName("price");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.ServiceRecords)
@@ -177,7 +182,7 @@ namespace dotnet.Models
                 entity.Property(e => e.Type).HasColumnType("INTEGER").HasColumnName("type");
                 entity.Property(e => e.Broker).HasColumnType("TEXT").HasColumnName("broker");
                 entity.Property(e => e.Fee).HasColumnType("REAL").HasColumnName("fee");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.InsuranceRecords)
@@ -199,7 +204,7 @@ namespace dotnet.Models
                 entity.Property(e => e.Date).HasColumnType("TEXT").HasColumnName("date");
                 entity.Property(e => e.Type).HasColumnType("INTEGER").HasColumnName("type");
                 entity.Property(e => e.Fee).HasColumnType("REAL").HasColumnName("fee");
-                entity.Property(e => e.VehicleId).HasColumnType("TEXT").HasColumnName("vehicle_id");
+                entity.Property(e => e.VehicleId).HasColumnType("INTEGER").HasColumnName("vehicle_id");
 
                 entity.HasOne(e => e.Vehicle)
                     .WithMany(v => v.LicenceRecords)

@@ -27,14 +27,14 @@ public class FineRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<FineRecordDto> getAll(String vehicleId) {
+    public List<FineRecordDto> getAll(Integer vehicleId) {
         return fineRecords.findByVehicleIdOrderByDateDescIdDesc(vehicleId).stream()
                 .map(FineRecordDto::from)
                 .toList();
     }
 
     @Transactional
-    public Long add(String vehicleId, FineRecordDto.Request req) {
+    public Long add(Integer vehicleId, FineRecordDto.Request req) {
         if (req == null) return 0L;
         if (!vehicles.existsById(vehicleId)) return 0L;
         FineRecord r = new FineRecord();
@@ -48,7 +48,7 @@ public class FineRecordService {
     }
 
     @Transactional
-    public boolean deleteById(String vehicleId, long id) {
+    public boolean deleteById(Integer vehicleId, long id) {
         var existing = fineRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         fineRecords.delete(existing.get());
@@ -56,7 +56,7 @@ public class FineRecordService {
     }
 
     @Transactional
-    public UpdateResult update(String vehicleId, long id, FineRecordDto.Request req) {
+    public UpdateResult update(Integer vehicleId, long id, FineRecordDto.Request req) {
         if (req == null) return UpdateResult.NOT_FOUND;
         var existing = fineRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return UpdateResult.NOT_FOUND;

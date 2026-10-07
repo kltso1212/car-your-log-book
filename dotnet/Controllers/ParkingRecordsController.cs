@@ -12,13 +12,13 @@ namespace dotnet.Controllers
         public ParkingRecordsController(IParkingRecordService service) { _parkingRecordService = service; }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             var records = await _parkingRecordService.GetAllAsync(id);
             return (records.Any()) ? Ok(records) : NoContent();
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> Post(string id, [FromBody] ParkingRecordDto req)
+        public async Task<IActionResult> Post(int id, [FromBody] ParkingRecordDto req)
         {
             var newId = await _parkingRecordService.AddAsync(id, req);
             return (newId > 0)
@@ -26,13 +26,13 @@ namespace dotnet.Controllers
                 : NotFound(new { message = "找不到車輛" });
         }
         [HttpDelete("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Delete(string vehicleId, long id)
+        public async Task<IActionResult> Delete(int vehicleId, long id)
         {
             var result = await _parkingRecordService.DeleteByIdAsync(vehicleId, id);
             return result ? NoContent() : NotFound(id);
         }
         [HttpPut("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Put(string vehicleId, long id, [FromBody] ParkingRecordDto req)
+        public async Task<IActionResult> Put(int vehicleId, long id, [FromBody] ParkingRecordDto req)
         {
             var result = await _parkingRecordService.UpdateAsync(vehicleId, id, req);
             return result switch

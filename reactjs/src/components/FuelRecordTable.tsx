@@ -20,6 +20,7 @@ export default function FuelRecordTable({ onEdit }: { onEdit: (record: FuelRecor
     const record = fuelRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteFuelRecord(currentVehicle, record)
       .then(() => {
         setFuelRecords(prev => prev.filter((_, i) => i !== index));

@@ -28,8 +28,8 @@ builder.Services.AddScoped<ILicenceRecordService, LicenceRecordService>();
 
 var app = builder.Build();
 
-// SQLite code-first without migrations: create the file + tables on start,
-// then bring pre-existing files up to date (type column + backfill petrol).
+// SQLite code-first without migrations: create the file + tables on start.
+// Assumes the new schema (vehicles with INTEGER PK + plate/brand/model/year).
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -37,15 +37,6 @@ using (var scope = app.Services.CreateScope())
     var conn = db.Database.GetDbConnection();
     if (conn.State != System.Data.ConnectionState.Open) conn.Open();
     using var cmd = conn.CreateCommand();
-    cmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('vehicles') WHERE name='type'";
-    var hasType = cmd.ExecuteScalar() as long? ?? 0L;
-    if (hasType == 0)
-    {
-        cmd.CommandText = "ALTER TABLE vehicles ADD COLUMN type INTEGER NOT NULL DEFAULT 1";
-        cmd.ExecuteNonQuery();
-    }
-    cmd.CommandText = "UPDATE vehicles SET type=1 WHERE CAST(type AS INTEGER) NOT IN (1,2,3,4)";
-    cmd.ExecuteNonQuery();
     // EnsureCreated() skips existing files, so create newer tables explicitly.
     cmd.CommandText =
         "CREATE TABLE IF NOT EXISTS charge_records (" +
@@ -54,7 +45,7 @@ using (var scope = app.Services.CreateScope())
         "odm INTEGER NOT NULL, " +
         "kwh REAL NOT NULL, " +
         "price REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE UNIQUE INDEX IF NOT EXISTS IX_charge_records_vehicle_id_odm " +
@@ -67,7 +58,7 @@ using (var scope = app.Services.CreateScope())
         "tunnel INTEGER NOT NULL, " +
         "bound INTEGER NOT NULL, " +
         "fee REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE INDEX IF NOT EXISTS IX_tunnel_records_vehicle_id_date " +
@@ -80,7 +71,7 @@ using (var scope = app.Services.CreateScope())
         "carpark TEXT NOT NULL, " +
         "rental_type INTEGER NOT NULL, " +
         "fee REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE INDEX IF NOT EXISTS IX_parking_records_vehicle_id_date " +
@@ -94,7 +85,7 @@ using (var scope = app.Services.CreateScope())
         "custom_offence TEXT, " +
         "location TEXT, " +
         "penalty REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE INDEX IF NOT EXISTS IX_fine_records_vehicle_id_date " +
@@ -108,7 +99,7 @@ using (var scope = app.Services.CreateScope())
         "items TEXT NOT NULL DEFAULT '[]', " +
         "custom_item TEXT, " +
         "price REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE UNIQUE INDEX IF NOT EXISTS IX_service_records_vehicle_id_odm " +
@@ -121,7 +112,7 @@ using (var scope = app.Services.CreateScope())
         "type INTEGER NOT NULL, " +
         "broker TEXT, " +
         "fee REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE UNIQUE INDEX IF NOT EXISTS IX_insurance_records_vehicle_id_date " +
@@ -133,7 +124,7 @@ using (var scope = app.Services.CreateScope())
         "date TEXT NOT NULL, " +
         "type INTEGER NOT NULL, " +
         "fee REAL NOT NULL, " +
-        "vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
+        "vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE)";
     cmd.ExecuteNonQuery();
     cmd.CommandText =
         "CREATE UNIQUE INDEX IF NOT EXISTS IX_licence_records_vehicle_id_date " +

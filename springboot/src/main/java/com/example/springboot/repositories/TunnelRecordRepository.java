@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface TunnelRecordRepository extends JpaRepository<TunnelRecord, Long> {
 
-    List<TunnelRecord> findByVehicleIdOrderByDateDescIdDesc(String vehicleId);
+    List<TunnelRecord> findByVehicleIdOrderByDateDescIdDesc(Integer vehicleId);
 }

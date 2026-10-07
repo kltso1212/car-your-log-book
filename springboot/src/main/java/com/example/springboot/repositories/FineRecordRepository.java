@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface FineRecordRepository extends JpaRepository<FineRecord, Long> {
 
-    List<FineRecord> findByVehicleIdOrderByDateDescIdDesc(String vehicleId);
+    List<FineRecord> findByVehicleIdOrderByDateDescIdDesc(Integer vehicleId);
 }

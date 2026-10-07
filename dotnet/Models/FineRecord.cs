@@ -20,7 +20,7 @@ namespace dotnet.Models
         public string? CustomOffence { get; set; }
         public string? Location { get; set; }
         public double Penalty { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public FineRecord() { }
         public FineRecord(FineRecordDto data)

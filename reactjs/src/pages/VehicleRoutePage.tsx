@@ -1,9 +1,9 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { PageContext } from '../contexts/PageContext';
 import { Page, pageIndexFromSlug, pageSlugs, isSlugForVehicle, defaultSlugForVehicle } from '../types/Page';
-import { vehicleTypeOf } from '../types/Vehicle';
+import { vehicleLabelOf, vehiclePlateOf, vehicleTypeOf } from '../types/Vehicle';
 import FuelRecordPage from './FuelRecordPage';
 import ChargePage from './ChargePage';
 import TunnelPage from './TunnelPage';
@@ -14,20 +14,24 @@ import InsurancePage from './InsurancePage';
 import LicencePage from './LicencePage';
 import SummaryPage from './SummaryPage';
 import ComingSoonPage from './ComingSoonPage';
+import VehicleDialog from '../components/VehicleDialog';
 
 export default function VehicleRoutePage() {
   const { vehicleId, slug } = useParams();
   const navigate = useNavigate();
   const { vehicles, currentVehicle, setCurrentVehicle } = useContext(VehicleContext);
   const { currentPage, setCurrentPage } = useContext(PageContext);
+  const [showEdit, setShowEdit] = useState(false);
 
-  const decodedId = vehicleId ? decodeURIComponent(vehicleId) : '';
+  const decodedId: number | '' = vehicleId !== undefined && vehicleId !== '' && Number.isInteger(Number(vehicleId))
+    ? Number(vehicleId)
+    : '';
   const slugIndex = pageIndexFromSlug(slug);
   const validSlug = (pageSlugs as readonly string[]).includes(slug ?? '');
 
   // Sync URL -> context (vehicle + tab)
   useEffect(() => {
-    if (decodedId && decodedId !== currentVehicle) setCurrentVehicle(decodedId);
+    if (decodedId !== '' && decodedId !== currentVehicle) setCurrentVehicle(decodedId);
     if (slugIndex !== currentPage) setCurrentPage(slugIndex);
   }, [decodedId, slugIndex, currentVehicle, currentPage, setCurrentVehicle, setCurrentPage]);
 
@@ -36,8 +40,8 @@ export default function VehicleRoutePage() {
     if (vehicleId && !validSlug) navigate(`/vehicles/${vehicleId}/fuel`, { replace: true });
   }, [vehicleId, validSlug, navigate]);
 
-  if (!decodedId) return <h2>請選擇座駕</h2>;
-  // Vehicles still loading is handled by parent; unknown plate -> friendly message
+  if (decodedId === '') return <h2>請選擇座駕</h2>;
+  // Vehicles still loading is handled by parent; unknown id -> friendly message
   if (vehicles.length > 0 && !vehicles.some(v => v.id === decodedId)) {
     return (
       <div>
@@ -50,13 +54,28 @@ export default function VehicleRoutePage() {
   // Electric vehicles use the charge tab instead of fuel (and vice versa).
   const currentType = vehicleTypeOf(vehicles, decodedId);
   if (vehicles.length > 0 && !isSlugForVehicle(slug, currentType)) {
-    navigate(`/vehicles/${vehicleId}/${defaultSlugForVehicle(currentType)}`, { replace: true });
+    navigate(`/vehicles/${decodedId}/${defaultSlugForVehicle(currentType)}`, { replace: true });
     return null;
   }
 
+  const plate = vehiclePlateOf(vehicles, decodedId);
+  const current = vehicles.find(v => v.id === decodedId);
+  // Summary tab: one-line title "{plate} {brand} {model} {year}" + edit button;
+  // other tabs show "{plate}的{xxx}記錄".
+  const heading = slugIndex === 0
+    ? vehicleLabelOf(vehicles, decodedId)
+    : `${plate}的${Page(slugIndex) ?? ''}記錄`;
   return (
     <div>
-      {decodedId && <h1>{decodedId}{slugIndex === 0 ? '' : `的${Page(slugIndex) ?? ''}記錄`}</h1>}
+      <h1>{heading}{slugIndex === 0 && current && (
+        <button className="icon-button" title="編輯座駕" aria-label="編輯座駕" onClick={() => setShowEdit(true)}>✏️</button>
+      )}</h1>
+      {showEdit && current && (
+        <VehicleDialog
+          initial={current}
+          onClose={() => setShowEdit(false)}
+        />
+      )}
       {slug === 'fuel' ? (
         <FuelRecordPage />
       ) : slug === 'charge' ? (

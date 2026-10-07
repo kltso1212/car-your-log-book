@@ -30,19 +30,19 @@ public class FuelRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<FuelRecordDto> getAll(String vehicleId) {
+    public List<FuelRecordDto> getAll(Integer vehicleId) {
         return fuelRecords.findByVehicleIdOrderByOdmAsc(vehicleId).stream()
                 .map(FuelRecordDto::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public Optional<FuelRecord> getByOdm(String vehicleId, int odm) {
+    public Optional<FuelRecord> getByOdm(Integer vehicleId, int odm) {
         return fuelRecords.findByVehicleIdAndOdm(vehicleId, odm);
     }
 
     @Transactional
-    public boolean add(String vehicleId, FuelRecordDto.Request req) {
+    public boolean add(Integer vehicleId, FuelRecordDto.Request req) {
         if (req == null) return false;
         if (!vehicles.existsById(vehicleId)) return false;
         if (fuelRecords.existsByVehicleIdAndOdm(vehicleId, req.odm())) return false;
@@ -59,14 +59,14 @@ public class FuelRecordService {
     }
 
     @Transactional
-    public boolean deleteByOdm(String vehicleId, int odm) {
+    public boolean deleteByOdm(Integer vehicleId, int odm) {
         if (!fuelRecords.existsByVehicleIdAndOdm(vehicleId, odm)) return false;
         fuelRecords.deleteByVehicleIdAndOdm(vehicleId, odm);
         return true;
     }
 
     @Transactional
-    public UpdateResult update(String vehicleId, long id, FuelRecordDto.Request req) {
+    public UpdateResult update(Integer vehicleId, long id, FuelRecordDto.Request req) {
         if (req == null) return UpdateResult.NOT_FOUND;
         var existing = fuelRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return UpdateResult.NOT_FOUND;

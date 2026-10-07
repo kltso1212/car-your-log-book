@@ -10,9 +10,9 @@ import java.util.Optional;
 @Repository
 public interface ServiceRecordRepository extends JpaRepository<ServiceRecord, Long> {
 
-    List<ServiceRecord> findByVehicleIdOrderByOdmAsc(String vehicleId);
+    List<ServiceRecord> findByVehicleIdOrderByOdmAsc(Integer vehicleId);
 
-    Optional<ServiceRecord> findByVehicleIdAndOdm(String vehicleId, int odm);
+    Optional<ServiceRecord> findByVehicleIdAndOdm(Integer vehicleId, int odm);
 
-    boolean existsByVehicleIdAndOdm(String vehicleId, int odm);
+    boolean existsByVehicleIdAndOdm(Integer vehicleId, int odm);
 }

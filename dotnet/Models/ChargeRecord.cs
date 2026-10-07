@@ -16,7 +16,7 @@ namespace dotnet.Models
         public int Odm { get; set; } = 0;
         public double Kwh { get; set; } = 0;
         public double Price { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public ChargeRecord() { }
         public ChargeRecord(ChargeRecordDto data)

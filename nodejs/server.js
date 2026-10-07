@@ -18,39 +18,99 @@ app.use(express.json());
 // Liveness probe for Docker / Cloud Run / Render / Railway health checks.
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// Vehicle type: 1 petrol / 2 hybrid / 3 electric / 4 diesel.
-// Set once at creation; no update endpoint exists so it is immutable.
+// Vehicle: id INTEGER PK (surrogate), plate TEXT (non-unique, upper-cased),
+// type 1 petrol / 2 hybrid / 3 electric / 4 diesel (changeable via PUT),
+// brand/model TEXT, year INTEGER|null. plate/type/brand/model/year are mutable via PUT.
 const VALID_VEHICLE_TYPES = [1, 2, 3, 4];
+
+const normalizePlate = (v) => String(v ?? '').trim().toUpperCase();
+const isValidYear = (v) => {
+    if (v === null || v === undefined || v === '') return true;
+    const n = Number(v);
+    if (!Number.isInteger(n)) return false;
+    return n >= 1900 && n <= new Date().getFullYear() + 1;
+};
 
 app.get('/api/vehicles', async (req, res) => {
     const { rows } = await db.query(
-        `SELECT id, CAST(type AS INTEGER) AS type
-        FROM vehicles 
+        `SELECT id, plate, CAST(type AS INTEGER) AS type, brand, model, year
+        FROM vehicles
         ORDER BY id`);
     res.json(rows);
 });
 
+app.get('/api/vehicles/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(404).json({ message: '找不到車輛' });
+    const { rows } = await db.query(
+        `SELECT id, plate, CAST(type AS INTEGER) AS type, brand, model, year
+        FROM vehicles
+        WHERE id=$1`, [id]);
+    if (rows.length === 0) return res.status(404).json({ message: '找不到車輛' });
+    res.json(rows[0]);
+});
+
 app.post('/api/vehicles', async (req, res) => {
-    const { id, type } = req.body;
+    const { plate, type, brand, model, year } = req.body;
     const vehicleType = Number(type);
     if (!VALID_VEHICLE_TYPES.includes(vehicleType)) {
         return res.status(400).json({ message: '車輛類別無效' });
     }
+    const normPlate = normalizePlate(plate);
+    if (!normPlate) {
+        return res.status(400).json({ message: '車牌無效' });
+    }
+    const normBrand = String(brand ?? '').trim();
+    const normModel = String(model ?? '').trim();
+    const normYear = (year === null || year === undefined || year === '') ? null : Number(year);
+    if (!isValidYear(normYear)) {
+        return res.status(400).json({ message: '年份無效' });
+    }
     try {
-        await db.query(
-            `INSERT INTO vehicles (id, type) 
-            VALUES ($1, $2)`, [id, vehicleType]);
-        res.status(200).json({ message: '車輛註冊成功' });
+        const result = await db.query(
+            `INSERT INTO vehicles (plate, type, brand, model, year)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id`,
+            [normPlate, vehicleType, normBrand, normModel, normYear]);
+        res.status(200).json({ message: '車輛註冊成功', id: result.rows[0]?.id ?? null });
     } catch (err) {
         if (err.code === '23505') return res.status(409).json({ message: '車輛已被註冊' });
         return res.status(500).end();
     }
 });
 
+app.put('/api/vehicles/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(404).json({ message: '找不到車輛' });
+    const { plate, type, brand, model, year } = req.body;
+    const vehicleType = Number(type);
+    if (!VALID_VEHICLE_TYPES.includes(vehicleType)) {
+        return res.status(400).json({ message: '車輛類別無效' });
+    }
+    const normPlate = normalizePlate(plate);
+    if (!normPlate) {
+        return res.status(400).json({ message: '車牌無效' });
+    }
+    const normBrand = String(brand ?? '').trim();
+    const normModel = String(model ?? '').trim();
+    const normYear = (year === null || year === undefined || year === '') ? null : Number(year);
+    if (!isValidYear(normYear)) {
+        return res.status(400).json({ message: '年份無效' });
+    }
+    const result = await db.query(
+        `UPDATE vehicles
+        SET plate=$1, type=$2, brand=$3, model=$4, year=$5
+        WHERE id=$6`,
+        [normPlate, vehicleType, normBrand, normModel, normYear, id]);
+    if (result.rowCount === 0) return res.status(404).json({ message: '找不到車輛' });
+    res.status(200).json({ message: '車輛已更新' });
+});
+
 app.delete('/api/vehicles/:id', async (req, res) => {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(404).json({ message: '找不到車輛' });
     await db.query(
-        `DELETE FROM vehicles 
+        `DELETE FROM vehicles
         WHERE id=$1`, [id]);
     res.status(204).json({ message: '車輛已刪除' });
 });

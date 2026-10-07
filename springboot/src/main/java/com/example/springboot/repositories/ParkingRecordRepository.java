@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ParkingRecordRepository extends JpaRepository<ParkingRecord, Long> {
 
-    List<ParkingRecord> findByVehicleIdOrderByDateDescIdDesc(String vehicleId);
+    List<ParkingRecord> findByVehicleIdOrderByDateDescIdDesc(Integer vehicleId);
 }

@@ -12,13 +12,13 @@ namespace dotnet.Controllers
         public TunnelRecordsController(ITunnelRecordService service) { _tunnelRecordService = service; }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             var records = await _tunnelRecordService.GetAllAsync(id);
             return (records.Any()) ? Ok(records) : NoContent();
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> Post(string id, [FromBody] TunnelRecordDto req)
+        public async Task<IActionResult> Post(int id, [FromBody] TunnelRecordDto req)
         {
             var newId = await _tunnelRecordService.AddAsync(id, req);
             return (newId > 0)
@@ -26,13 +26,13 @@ namespace dotnet.Controllers
                 : NotFound(new { message = "找不到車輛" });
         }
         [HttpDelete("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Delete(string vehicleId, long id)
+        public async Task<IActionResult> Delete(int vehicleId, long id)
         {
             var result = await _tunnelRecordService.DeleteByIdAsync(vehicleId, id);
             return result ? NoContent() : NotFound(id);
         }
         [HttpPut("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Put(string vehicleId, long id, [FromBody] TunnelRecordDto req)
+        public async Task<IActionResult> Put(int vehicleId, long id, [FromBody] TunnelRecordDto req)
         {
             var result = await _tunnelRecordService.UpdateAsync(vehicleId, id, req);
             return result switch

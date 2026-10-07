@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Mirrors dotnet/Controllers/VehiclesController.cs (route api/vehicles).
@@ -36,28 +38,56 @@ public class VehiclesController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VehicleDto> getById(@PathVariable String id) {
+    public ResponseEntity<VehicleDto> getById(@PathVariable Integer id) {
         return vehicleService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<FuelRecordDto.Message> post(@RequestBody VehicleDto req) {
+    public ResponseEntity<Map<String, Object>> post(@RequestBody VehicleDto req) {
+        if (req.type() == null || req.type() < 1 || req.type() > 4) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "車輛類別無效"));
+        }
+        if (VehicleService.normalizePlate(req.plate()).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "車牌無效"));
+        }
+        if (!VehicleService.isValidYear(req.year())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "年份無效"));
+        }
+        Integer id = vehicleService.add(req);
+        return ResponseEntity.ok(Map.of("message", "車輛註冊成功", "id", id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<FuelRecordDto.Message> put(
+            @PathVariable Integer id,
+            @RequestBody VehicleDto req) {
         if (req.type() == null || req.type() < 1 || req.type() > 4) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new FuelRecordDto.Message("車輛類別無效"));
         }
-        boolean ok = vehicleService.add(req);
-        if (!ok) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new FuelRecordDto.Message("車輛已被註冊"));
+        if (VehicleService.normalizePlate(req.plate()).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new FuelRecordDto.Message("車牌無效"));
         }
-        return ResponseEntity.ok(new FuelRecordDto.Message("車輛註冊成功"));
+        if (!VehicleService.isValidYear(req.year())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new FuelRecordDto.Message("年份無效"));
+        }
+        boolean ok = vehicleService.update(id, req);
+        if (!ok) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new FuelRecordDto.Message("找不到車輛"));
+        }
+        return ResponseEntity.ok(new FuelRecordDto.Message("車輛已更新"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         boolean ok = vehicleService.deleteById(id);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }

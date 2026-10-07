@@ -32,5 +32,5 @@ export const pageIndexFromSlug = (slug: string | undefined): number => {
 
 export const slugFromPageIndex = (index: number): PageSlug => pageSlugs.at(index) ?? 'fuel';
 
-export const vehiclePath = (vehicleId: string, slug: PageSlug = 'fuel'): string =>
-  vehicleId ? `/vehicles/${encodeURIComponent(vehicleId)}/${slug}` : '/';
+export const vehiclePath = (vehicleId: number | '', slug: PageSlug = 'fuel'): string =>
+  vehicleId === '' ? '/' : `/vehicles/${vehicleId}/${slug}`;

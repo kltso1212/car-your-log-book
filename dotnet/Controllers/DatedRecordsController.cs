@@ -12,13 +12,13 @@ namespace dotnet.Controllers
         public InsuranceRecordsController(IInsuranceRecordService service) { _service = service; }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             var records = await _service.GetAllAsync(id);
             return (records.Any()) ? Ok(records) : NoContent();
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> Post(string id, [FromBody] InsuranceRecordDto req)
+        public async Task<IActionResult> Post(int id, [FromBody] InsuranceRecordDto req)
         {
             var newId = await _service.AddAsync(id, req);
             return newId switch
@@ -29,13 +29,13 @@ namespace dotnet.Controllers
             };
         }
         [HttpDelete("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Delete(string vehicleId, long id)
+        public async Task<IActionResult> Delete(int vehicleId, long id)
         {
             var result = await _service.DeleteByIdAsync(vehicleId, id);
             return result ? NoContent() : NotFound(id);
         }
         [HttpPut("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Put(string vehicleId, long id, [FromBody] InsuranceRecordDto req)
+        public async Task<IActionResult> Put(int vehicleId, long id, [FromBody] InsuranceRecordDto req)
         {
             var result = await _service.UpdateAsync(vehicleId, id, req);
             return result switch
@@ -55,13 +55,13 @@ namespace dotnet.Controllers
         public LicenceRecordsController(ILicenceRecordService service) { _service = service; }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             var records = await _service.GetAllAsync(id);
             return (records.Any()) ? Ok(records) : NoContent();
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> Post(string id, [FromBody] LicenceRecordDto req)
+        public async Task<IActionResult> Post(int id, [FromBody] LicenceRecordDto req)
         {
             var newId = await _service.AddAsync(id, req);
             return newId switch
@@ -72,13 +72,13 @@ namespace dotnet.Controllers
             };
         }
         [HttpDelete("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Delete(string vehicleId, long id)
+        public async Task<IActionResult> Delete(int vehicleId, long id)
         {
             var result = await _service.DeleteByIdAsync(vehicleId, id);
             return result ? NoContent() : NotFound(id);
         }
         [HttpPut("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Put(string vehicleId, long id, [FromBody] LicenceRecordDto req)
+        public async Task<IActionResult> Put(int vehicleId, long id, [FromBody] LicenceRecordDto req)
         {
             var result = await _service.UpdateAsync(vehicleId, id, req);
             return result switch

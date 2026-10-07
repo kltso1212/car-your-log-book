@@ -31,13 +31,13 @@ public class DatedRecordsController {
     }
 
     @GetMapping("/insurancerecords/{id}")
-    public ResponseEntity<List<DatedRecordDto.Insurance>> getInsurance(@PathVariable String id) {
+    public ResponseEntity<List<DatedRecordDto.Insurance>> getInsurance(@PathVariable Integer id) {
         return ResponseEntity.ok(datedRecordService.getInsurance(id));
     }
 
     @PostMapping("/insurancerecords/{id}")
     public ResponseEntity<Map<String, Object>> postInsurance(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestBody DatedRecordDto.Insurance.Request req) {
         long newId = datedRecordService.addInsurance(id, req);
         if (newId == -1L) {
@@ -54,7 +54,7 @@ public class DatedRecordsController {
 
     @DeleteMapping("/insurancerecords/{vehicleId}/{id}")
     public ResponseEntity<Void> deleteInsurance(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id) {
         boolean ok = datedRecordService.deleteInsurance(vehicleId, id);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -62,7 +62,7 @@ public class DatedRecordsController {
 
     @PutMapping("/insurancerecords/{vehicleId}/{id}")
     public ResponseEntity<FuelRecordDto.Message> putInsurance(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id,
             @RequestBody DatedRecordDto.Insurance.Request req) {
         return switch (datedRecordService.updateInsurance(vehicleId, id, req)) {
@@ -75,13 +75,13 @@ public class DatedRecordsController {
     }
 
     @GetMapping("/licencerecords/{id}")
-    public ResponseEntity<List<DatedRecordDto.Licence>> getLicence(@PathVariable String id) {
+    public ResponseEntity<List<DatedRecordDto.Licence>> getLicence(@PathVariable Integer id) {
         return ResponseEntity.ok(datedRecordService.getLicence(id));
     }
 
     @PostMapping("/licencerecords/{id}")
     public ResponseEntity<Map<String, Object>> postLicence(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestBody DatedRecordDto.Licence.Request req) {
         long newId = datedRecordService.addLicence(id, req);
         if (newId == -1L) {
@@ -98,7 +98,7 @@ public class DatedRecordsController {
 
     @DeleteMapping("/licencerecords/{vehicleId}/{id}")
     public ResponseEntity<Void> deleteLicence(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id) {
         boolean ok = datedRecordService.deleteLicence(vehicleId, id);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -106,7 +106,7 @@ public class DatedRecordsController {
 
     @PutMapping("/licencerecords/{vehicleId}/{id}")
     public ResponseEntity<FuelRecordDto.Message> putLicence(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id,
             @RequestBody DatedRecordDto.Licence.Request req) {
         return switch (datedRecordService.updateLicence(vehicleId, id, req)) {

@@ -15,7 +15,7 @@ namespace dotnet.Models
         public int Type { get; set; } = 2;
         public string? Broker { get; set; }
         public double Fee { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public InsuranceRecord() { }
         public InsuranceRecord(InsuranceRecordDto data)
@@ -47,7 +47,7 @@ namespace dotnet.Models
         public DateOnly Date { get; set; }
         public int Type { get; set; } = 2;
         public double Fee { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public LicenceRecord() { }
         public LicenceRecord(LicenceRecordDto data)

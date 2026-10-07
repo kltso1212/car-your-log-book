@@ -9,11 +9,12 @@ import CalendarButtons from '../components/CalendarButtons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { compareInsuranceByDateDesc } from '../utils/insuranceSort';
 import { insuranceExpiry, isExpiringSoon } from '../utils/expiry';
+import { vehiclePlateOf } from '../types/Vehicle';
 
 type DialogState = { mode: 'closed' } | { mode: 'insert' } | { mode: 'edit'; record: InsuranceRecord };
 
 export default function InsurancePage() {
-  const { currentVehicle } = useContext(VehicleContext);
+  const { vehicles, currentVehicle } = useContext(VehicleContext);
   const [insuranceRecords, setInsuranceRecords] = useState<InsuranceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' });
@@ -47,10 +48,10 @@ export default function InsurancePage() {
           <p className={isExpiringSoon(insuranceDue) ? 'expiry-alert' : undefined}>
             {isExpiringSoon(insuranceDue) && '⚠️ '}保險到期日：{insuranceDue}{' '}
             <CalendarButtons
-              title={`保險到期：${currentVehicle}`}
+              title={`保險到期：${vehiclePlateOf(vehicles, currentVehicle)}`}
               date={insuranceDue}
-              filename={`保險到期-${currentVehicle}`}
-              description={`車輛 ${currentVehicle} 保險到期日 ${insuranceDue}，請續保。`}
+              filename={`保險到期-${vehiclePlateOf(vehicles, currentVehicle)}`}
+              description={`車輛 ${vehiclePlateOf(vehicles, currentVehicle)} 保險到期日 ${insuranceDue}，請續保。`}
             />
           </p>
         )}

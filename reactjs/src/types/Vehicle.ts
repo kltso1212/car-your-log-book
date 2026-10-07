@@ -1,8 +1,20 @@
 export type VehicleType = 1 | 2 | 3 | 4;
 
 export interface Vehicle {
-  id: string;
+  id: number;
+  plate: string;
   type: VehicleType;
+  brand: string;
+  model: string;
+  year: number | null;
+}
+
+export interface NewVehicleInput {
+  plate: string;
+  type: VehicleType;
+  brand: string;
+  model: string;
+  year: number | null;
 }
 
 export interface VehicleTypeOption {
@@ -18,6 +30,35 @@ export const vehicleTypes: VehicleTypeOption[] = [
   { id: 3, en: 'electric', tc: '電動車' },
   { id: 4, en: 'diesel', tc: '柴油車' },
 ];
+
+// Popular brands for the add-vehicle dropdown. Anything else goes through
+// OTHER_BRAND ("其他"), which reveals a free-text box in the dialog.
+export const vehicleBrands: string[] = [
+  'Toyota',
+  'Honda',
+  'Nissan',
+  'Mazda',
+  'Mitsubishi',
+  'Subaru',
+  'Suzuki',
+  'Hyundai',
+  'Kia',
+  'Lexus',
+  'Mercedes-Benz',
+  'BMW',
+  'Audi',
+  'Volkswagen',
+  'Volvo',
+  'Tesla',
+  'BYD',
+  'MG',
+  'Ford',
+  'Land Rover',
+  'Mini',
+  'Porsche',
+];
+
+export const OTHER_BRAND = '__OTHER__';
 
 export const DEFAULT_VEHICLE_TYPE: VehicleType = 1;
 export const ELECTRIC_TYPE: VehicleType = 3;
@@ -39,8 +80,28 @@ export const normalizeVehicleType = (t: unknown): VehicleType => {
 };
 
 /** Look up the type of the selected vehicle (undefined when none selected). */
-export const vehicleTypeOf = (vehicles: Vehicle[], id: string): VehicleType | undefined =>
+export const vehicleTypeOf = (vehicles: Vehicle[], id: number | ''): VehicleType | undefined =>
   vehicles.find(v => v.id === id)?.type;
+
+/** Short spec string for display, e.g. "AB1234 Toyota Corolla 2020". */
+export const vehicleLabelOf = (vehicles: Vehicle[], id: number | ''): string => {
+  const v = vehicles.find(x => x.id === id);
+  if (!v) return id === '' ? '' : String(id);
+  return [v.plate, v.brand, v.model, v.year ?? ''].filter(x => x !== '').join(' ');
+};
+
+/** Plate only (for titles/filenames), falls back to the raw id. */
+export const vehiclePlateOf = (vehicles: Vehicle[], id: number | ''): string => {
+  const v = vehicles.find(x => x.id === id);
+  if (v) return v.plate;
+  return id === '' ? '' : String(id);
+};
+
+export const isValidYear = (y: unknown): boolean => {
+  if (y === null || y === undefined || y === '') return true;
+  if (typeof y !== 'number' || !Number.isInteger(y)) return false;
+  return y >= 1900 && y <= new Date().getFullYear() + 1;
+};
 
 export const VehicleTypeName = (t: VehicleType | undefined): string =>
   vehicleTypes.find(v => v.id === t)?.tc ?? '';

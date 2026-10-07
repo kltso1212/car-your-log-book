@@ -31,13 +31,13 @@ public class FineRecordsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<FineRecordDto>> get(@PathVariable String id) {
+    public ResponseEntity<List<FineRecordDto>> get(@PathVariable Integer id) {
         return ResponseEntity.ok(fineRecordService.getAll(id));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<Map<String, Object>> post(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestBody FineRecordDto.Request req) {
         long newId = fineRecordService.add(id, req);
         if (newId <= 0) {
@@ -50,7 +50,7 @@ public class FineRecordsController {
 
     @DeleteMapping("/{vehicleId}/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id) {
         boolean ok = fineRecordService.deleteById(vehicleId, id);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -58,7 +58,7 @@ public class FineRecordsController {
 
     @PutMapping("/{vehicleId}/{id}")
     public ResponseEntity<FuelRecordDto.Message> put(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id,
             @RequestBody FineRecordDto.Request req) {
         return switch (fineRecordService.update(vehicleId, id, req)) {

@@ -35,12 +35,12 @@ def _decode(rows: list[dict]) -> list[dict]:
 
 
 @router.get("/{vehicle_id}", response_model=list[ServiceRecordOut])
-def list_records(vehicle_id: str):
+def list_records(vehicle_id: int):
     return _decode(db.rows(_LIST_SQL, (vehicle_id,)))
 
 
 @router.post("/{vehicle_id}", response_model=Message, status_code=status.HTTP_201_CREATED)
-def add_record(vehicle_id: str, body: ServiceRecordIn):
+def add_record(vehicle_id: int, body: ServiceRecordIn):
     try:
         db.execute(
             """INSERT INTO service_records
@@ -61,13 +61,13 @@ def add_record(vehicle_id: str, body: ServiceRecordIn):
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_record(vehicle_id: str, odm: int):
+def delete_record(vehicle_id: int, odm: int):
     db.execute("DELETE FROM service_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{vehicle_id}/{record_id}", response_model=Message)
-def update_record(vehicle_id: str, record_id: int, body: ServiceRecordIn):
+def update_record(vehicle_id: int, record_id: int, body: ServiceRecordIn):
     existing = db.rows("SELECT id FROM service_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     if not existing:
         return Response(

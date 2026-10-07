@@ -39,17 +39,17 @@ _LIST_LICENCE_SQL = """
 
 
 @insurance_router.get("/{vehicle_id}", response_model=list[InsuranceRecordOut])
-def list_insurance(vehicle_id: str):
+def list_insurance(vehicle_id: int):
     return db.rows(_LIST_INSURANCE_SQL, (vehicle_id,))
 
 
 @licence_router.get("/{vehicle_id}", response_model=list[LicenceRecordOut])
-def list_licence(vehicle_id: str):
+def list_licence(vehicle_id: int):
     return db.rows(_LIST_LICENCE_SQL, (vehicle_id,))
 
 
 @insurance_router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
-def add_insurance(vehicle_id: str, body: InsuranceRecordIn):
+def add_insurance(vehicle_id: int, body: InsuranceRecordIn):
     try:
         new_id = db.insert(
             """INSERT INTO insurance_records
@@ -69,7 +69,7 @@ def add_insurance(vehicle_id: str, body: InsuranceRecordIn):
 
 
 @licence_router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
-def add_licence(vehicle_id: str, body: LicenceRecordIn):
+def add_licence(vehicle_id: int, body: LicenceRecordIn):
     try:
         new_id = db.insert(
             """INSERT INTO licence_records
@@ -89,19 +89,19 @@ def add_licence(vehicle_id: str, body: LicenceRecordIn):
 
 
 @insurance_router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_insurance(vehicle_id: str, record_id: int):
+def delete_insurance(vehicle_id: int, record_id: int):
     db.execute("DELETE FROM insurance_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @licence_router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_licence(vehicle_id: str, record_id: int):
+def delete_licence(vehicle_id: int, record_id: int):
     db.execute("DELETE FROM licence_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @insurance_router.put("/{vehicle_id}/{record_id}", response_model=Message)
-def update_insurance(vehicle_id: str, record_id: int, body: InsuranceRecordIn):
+def update_insurance(vehicle_id: int, record_id: int, body: InsuranceRecordIn):
     existing = db.rows("SELECT id FROM insurance_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     if not existing:
         return Response(
@@ -128,7 +128,7 @@ def update_insurance(vehicle_id: str, record_id: int, body: InsuranceRecordIn):
 
 
 @licence_router.put("/{vehicle_id}/{record_id}", response_model=Message)
-def update_licence(vehicle_id: str, record_id: int, body: LicenceRecordIn):
+def update_licence(vehicle_id: int, record_id: int, body: LicenceRecordIn):
     existing = db.rows("SELECT id FROM licence_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     if not existing:
         return Response(

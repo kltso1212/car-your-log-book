@@ -17,6 +17,7 @@ export default function ParkingTable({ onEdit }: { onEdit: (record: ParkingRecor
     const record = parkingRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteParkingRecord(currentVehicle, record)
       .then(() => {
         setParkingRecords(prev => prev.filter((_, i) => i !== index));

@@ -15,7 +15,7 @@ namespace dotnet.Models
         public string Carpark { get; set; } = string.Empty;
         public int RentalType { get; set; } = 1;
         public double Fee { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public ParkingRecord() { }
         public ParkingRecord(ParkingRecordDto data)

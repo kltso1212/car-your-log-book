@@ -9,9 +9,9 @@ import java.util.List;
 @Repository
 public interface LicenceRecordRepository extends JpaRepository<LicenceRecord, Long> {
 
-    List<LicenceRecord> findByVehicleIdOrderByDateDescIdDesc(String vehicleId);
+    List<LicenceRecord> findByVehicleIdOrderByDateDescIdDesc(Integer vehicleId);
 
-    boolean existsByVehicleIdAndDate(String vehicleId, java.time.LocalDate date);
+    boolean existsByVehicleIdAndDate(Integer vehicleId, java.time.LocalDate date);
 
-    java.util.Optional<LicenceRecord> findByVehicleIdAndDate(String vehicleId, java.time.LocalDate date);
+    java.util.Optional<LicenceRecord> findByVehicleIdAndDate(Integer vehicleId, java.time.LocalDate date);
 }

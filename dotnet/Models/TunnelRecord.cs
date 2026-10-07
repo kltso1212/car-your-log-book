@@ -15,7 +15,7 @@ namespace dotnet.Models
         public int Tunnel { get; set; } = 0;
         public int Bound { get; set; } = 0;
         public double Fee { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public TunnelRecord() { }
         public TunnelRecord(TunnelRecordDto data)

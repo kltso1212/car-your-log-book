@@ -31,13 +31,13 @@ public class ParkingRecordsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<ParkingRecordDto>> get(@PathVariable String id) {
+    public ResponseEntity<List<ParkingRecordDto>> get(@PathVariable Integer id) {
         return ResponseEntity.ok(parkingRecordService.getAll(id));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<Map<String, Object>> post(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestBody ParkingRecordDto.Request req) {
         long newId = parkingRecordService.add(id, req);
         if (newId <= 0) {
@@ -50,7 +50,7 @@ public class ParkingRecordsController {
 
     @DeleteMapping("/{vehicleId}/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id) {
         boolean ok = parkingRecordService.deleteById(vehicleId, id);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -58,7 +58,7 @@ public class ParkingRecordsController {
 
     @PutMapping("/{vehicleId}/{id}")
     public ResponseEntity<FuelRecordDto.Message> put(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id,
             @RequestBody ParkingRecordDto.Request req) {
         return switch (parkingRecordService.update(vehicleId, id, req)) {

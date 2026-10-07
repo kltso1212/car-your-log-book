@@ -17,6 +17,7 @@ export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord)
     const record = tunnelRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteTunnelRecord(currentVehicle, record)
       .then(() => {
         setTunnelRecords(prev => prev.filter((_, i) => i !== index));

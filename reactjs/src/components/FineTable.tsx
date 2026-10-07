@@ -25,6 +25,7 @@ export default function FineTable({ onEdit }: { onEdit: (record: FineRecord) => 
     const record = fineRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteFineRecord(currentVehicle, record)
       .then(() => {
         setFineRecords(prev => prev.filter((_, i) => i !== index));

@@ -36,14 +36,14 @@ public class DatedRecordService {
     // ---- insurance ----
 
     @Transactional(readOnly = true)
-    public List<DatedRecordDto.Insurance> getInsurance(String vehicleId) {
+    public List<DatedRecordDto.Insurance> getInsurance(Integer vehicleId) {
         return insuranceRecords.findByVehicleIdOrderByDateDescIdDesc(vehicleId).stream()
                 .map(DatedRecordDto.Insurance::from)
                 .toList();
     }
 
     @Transactional
-    public Long addInsurance(String vehicleId, DatedRecordDto.Insurance.Request req) {
+    public Long addInsurance(Integer vehicleId, DatedRecordDto.Insurance.Request req) {
         if (req == null || !vehicles.existsById(vehicleId)) return 0L;
         // App-level duplicate check (matches fuel/service pattern): the
         // SQLite dialect error codes don't translate to catchable
@@ -65,7 +65,7 @@ public class DatedRecordService {
     }
 
     @Transactional
-    public boolean deleteInsurance(String vehicleId, long id) {
+    public boolean deleteInsurance(Integer vehicleId, long id) {
         var existing = insuranceRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         insuranceRecords.delete(existing.get());
@@ -73,7 +73,7 @@ public class DatedRecordService {
     }
 
     @Transactional
-    public UpdateResult updateInsurance(String vehicleId, long id, DatedRecordDto.Insurance.Request req) {
+    public UpdateResult updateInsurance(Integer vehicleId, long id, DatedRecordDto.Insurance.Request req) {
         if (req == null) return UpdateResult.NOT_FOUND;
         var existing = insuranceRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return UpdateResult.NOT_FOUND;
@@ -96,14 +96,14 @@ public class DatedRecordService {
     // ---- licence ----
 
     @Transactional(readOnly = true)
-    public List<DatedRecordDto.Licence> getLicence(String vehicleId) {
+    public List<DatedRecordDto.Licence> getLicence(Integer vehicleId) {
         return licenceRecords.findByVehicleIdOrderByDateDescIdDesc(vehicleId).stream()
                 .map(DatedRecordDto.Licence::from)
                 .toList();
     }
 
     @Transactional
-    public Long addLicence(String vehicleId, DatedRecordDto.Licence.Request req) {
+    public Long addLicence(Integer vehicleId, DatedRecordDto.Licence.Request req) {
         if (req == null || !vehicles.existsById(vehicleId)) return 0L;
         // App-level duplicate check, same reason as addInsurance.
         if (licenceRecords.existsByVehicleIdAndDate(vehicleId, req.date())) return -1L;
@@ -121,7 +121,7 @@ public class DatedRecordService {
     }
 
     @Transactional
-    public boolean deleteLicence(String vehicleId, long id) {
+    public boolean deleteLicence(Integer vehicleId, long id) {
         var existing = licenceRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         licenceRecords.delete(existing.get());
@@ -129,7 +129,7 @@ public class DatedRecordService {
     }
 
     @Transactional
-    public UpdateResult updateLicence(String vehicleId, long id, DatedRecordDto.Licence.Request req) {
+    public UpdateResult updateLicence(Integer vehicleId, long id, DatedRecordDto.Licence.Request req) {
         if (req == null) return UpdateResult.NOT_FOUND;
         var existing = licenceRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return UpdateResult.NOT_FOUND;

@@ -27,6 +27,7 @@ export default function ServiceTable({ onEdit }: {
     const record = serviceRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteServiceRecord(currentVehicle, record)
       .then(() => {
         setServiceRecords(prev => prev.filter((_, i) => i !== index));

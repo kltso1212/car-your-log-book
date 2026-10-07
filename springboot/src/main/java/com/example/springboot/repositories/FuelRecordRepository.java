@@ -11,11 +11,11 @@ import java.util.Optional;
 public interface FuelRecordRepository extends JpaRepository<FuelRecord, Long> {
 
     /** Mirrors the Node.js ORDER BY odm listing. */
-    List<FuelRecord> findByVehicleIdOrderByOdmAsc(String vehicleId);
+    List<FuelRecord> findByVehicleIdOrderByOdmAsc(Integer vehicleId);
 
-    Optional<FuelRecord> findByVehicleIdAndOdm(String vehicleId, int odm);
+    Optional<FuelRecord> findByVehicleIdAndOdm(Integer vehicleId, int odm);
 
-    boolean existsByVehicleIdAndOdm(String vehicleId, int odm);
+    boolean existsByVehicleIdAndOdm(Integer vehicleId, int odm);
 
-    void deleteByVehicleIdAndOdm(String vehicleId, int odm);
+    void deleteByVehicleIdAndOdm(Integer vehicleId, int odm);
 }

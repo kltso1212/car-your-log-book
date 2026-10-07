@@ -9,11 +9,12 @@ import CalendarButtons from '../components/CalendarButtons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { compareLicenceByDateDesc } from '../utils/licenceSort';
 import { licenceExpiry, isExpiringSoon } from '../utils/expiry';
+import { vehiclePlateOf } from '../types/Vehicle';
 
 type DialogState = { mode: 'closed' } | { mode: 'insert' } | { mode: 'edit'; record: LicenceRecord };
 
 export default function LicencePage() {
-  const { currentVehicle } = useContext(VehicleContext);
+  const { vehicles, currentVehicle } = useContext(VehicleContext);
   const [licenceRecords, setLicenceRecords] = useState<LicenceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' });
@@ -47,10 +48,10 @@ export default function LicencePage() {
           <p className={isExpiringSoon(licenceDue) ? 'expiry-alert' : undefined}>
             {isExpiringSoon(licenceDue) && '⚠️ '}牌費到期日：{licenceDue}{' '}
             <CalendarButtons
-              title={`牌費到期：${currentVehicle}`}
+              title={`牌費到期：${vehiclePlateOf(vehicles, currentVehicle)}`}
               date={licenceDue}
-              filename={`牌費到期-${currentVehicle}`}
-              description={`車輛 ${currentVehicle} 牌費到期日 ${licenceDue}，請續牌。`}
+              filename={`牌費到期-${vehiclePlateOf(vehicles, currentVehicle)}`}
+              description={`車輛 ${vehiclePlateOf(vehicles, currentVehicle)} 牌費到期日 ${licenceDue}，請續牌。`}
             />
           </p>
         )}

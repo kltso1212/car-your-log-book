@@ -4,10 +4,10 @@ namespace dotnet.Services
 {
     public interface ITunnelRecordService
     {
-        Task<IEnumerable<TunnelRecordDto>> GetAllAsync(string vehicleId);
-        Task<long> AddAsync(string vehicleId, TunnelRecordDto req);
-        Task<bool> DeleteByIdAsync(string vehicleId, long id);
-        Task<UpdateOutcome> UpdateAsync(string vehicleId, long id, TunnelRecordDto req);
+        Task<IEnumerable<TunnelRecordDto>> GetAllAsync(int vehicleId);
+        Task<long> AddAsync(int vehicleId, TunnelRecordDto req);
+        Task<bool> DeleteByIdAsync(int vehicleId, long id);
+        Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, TunnelRecordDto req);
     }
 
     public class TunnelRecordService : ITunnelRecordService
@@ -19,14 +19,14 @@ namespace dotnet.Services
         }
         public IEnumerable<Vehicle> Vehicles => _context.Vehicles;
         public IEnumerable<TunnelRecord> TunnelRecords => _context.TunnelRecords;
-        public async Task<IEnumerable<TunnelRecordDto>> GetAllAsync(string vehicleId)
+        public async Task<IEnumerable<TunnelRecordDto>> GetAllAsync(int vehicleId)
         {
             return await Task.Run(() => TunnelRecords
                 .Where(f => f.VehicleId == vehicleId)
                 .OrderByDescending(f => f.Date).ThenByDescending(f => f.Id)
                 .Select(f => f.Data).ToList());
         }
-        public async Task<long> AddAsync(string vehicleId, TunnelRecordDto req)
+        public async Task<long> AddAsync(int vehicleId, TunnelRecordDto req)
         {
             var vehicle = await Task.Run(() => Vehicles.Where(v => v.Id == vehicleId).FirstOrDefault());
             if (vehicle is null) return 0;
@@ -36,7 +36,7 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return record.Id;
         }
-        public async Task<bool> DeleteByIdAsync(string vehicleId, long id)
+        public async Task<bool> DeleteByIdAsync(int vehicleId, long id)
         {
             var record = await Task.Run(() => TunnelRecords
                 .Where(f => f.Id == id && f.VehicleId == vehicleId).FirstOrDefault());
@@ -46,7 +46,7 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<UpdateOutcome> UpdateAsync(string vehicleId, long id, TunnelRecordDto req)
+        public async Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, TunnelRecordDto req)
         {
             var record = await Task.Run(() => TunnelRecords
                 .Where(f => f.Id == id && f.VehicleId == vehicleId).FirstOrDefault());

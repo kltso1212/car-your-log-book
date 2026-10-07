@@ -23,12 +23,12 @@ _LIST_SQL = """
 
 
 @router.get("/{vehicle_id}", response_model=list[FuelRecordOut])
-def list_records(vehicle_id: str):
+def list_records(vehicle_id: int):
     return db.rows(_LIST_SQL, (vehicle_id,))
 
 
 @router.post("/{vehicle_id}", response_model=Message, status_code=status.HTTP_201_CREATED)
-def add_record(vehicle_id: str, body: FuelRecordIn):
+def add_record(vehicle_id: int, body: FuelRecordIn):
     db.execute(
         """INSERT INTO fuel_records
         (vehicle_id, date, odm, vendor, fuel_type, litre, price)
@@ -39,13 +39,13 @@ def add_record(vehicle_id: str, body: FuelRecordIn):
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_record(vehicle_id: str, odm: int):
+def delete_record(vehicle_id: int, odm: int):
     db.execute("DELETE FROM fuel_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.put("/{vehicle_id}/{record_id}", response_model=Message)
-def update_record(vehicle_id: str, record_id: int, body: FuelRecordIn):
+def update_record(vehicle_id: int, record_id: int, body: FuelRecordIn):
     existing = db.rows("SELECT id FROM fuel_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     if not existing:
         return Response(

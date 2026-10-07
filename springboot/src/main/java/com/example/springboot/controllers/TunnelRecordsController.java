@@ -31,13 +31,13 @@ public class TunnelRecordsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<TunnelRecordDto>> get(@PathVariable String id) {
+    public ResponseEntity<List<TunnelRecordDto>> get(@PathVariable Integer id) {
         return ResponseEntity.ok(tunnelRecordService.getAll(id));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<Map<String, Object>> post(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestBody TunnelRecordDto.Request req) {
         long newId = tunnelRecordService.add(id, req);
         if (newId <= 0) {
@@ -50,7 +50,7 @@ public class TunnelRecordsController {
 
     @DeleteMapping("/{vehicleId}/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id) {
         boolean ok = tunnelRecordService.deleteById(vehicleId, id);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -58,7 +58,7 @@ public class TunnelRecordsController {
 
     @PutMapping("/{vehicleId}/{id}")
     public ResponseEntity<FuelRecordDto.Message> put(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id,
             @RequestBody TunnelRecordDto.Request req) {
         return switch (tunnelRecordService.update(vehicleId, id, req)) {

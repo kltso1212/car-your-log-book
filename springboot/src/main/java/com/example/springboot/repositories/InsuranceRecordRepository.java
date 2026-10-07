@@ -9,9 +9,9 @@ import java.util.List;
 @Repository
 public interface InsuranceRecordRepository extends JpaRepository<InsuranceRecord, Long> {
 
-    List<InsuranceRecord> findByVehicleIdOrderByDateDescIdDesc(String vehicleId);
+    List<InsuranceRecord> findByVehicleIdOrderByDateDescIdDesc(Integer vehicleId);
 
-    boolean existsByVehicleIdAndDate(String vehicleId, java.time.LocalDate date);
+    boolean existsByVehicleIdAndDate(Integer vehicleId, java.time.LocalDate date);
 
-    java.util.Optional<InsuranceRecord> findByVehicleIdAndDate(String vehicleId, java.time.LocalDate date);
+    java.util.Optional<InsuranceRecord> findByVehicleIdAndDate(Integer vehicleId, java.time.LocalDate date);
 }

@@ -20,7 +20,7 @@
         public int FuelType { get; set; } = 0;
         public double Litre { get; set; } = 0;
         public double Price { get; set; } = 0;
-        public string VehicleId { get; set; } = string.Empty;
+        public int VehicleId { get; set; } = 0;
         public Vehicle Vehicle { get; set; } = null!;
         public FuelRecord() { }
         public FuelRecord(FuelRecordDto data)

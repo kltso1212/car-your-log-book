@@ -17,12 +17,16 @@ db.exec('PRAGMA foreign_keys = ON;');
 db.exec('PRAGMA journal_mode = WAL;');
 db.exec(`
     CREATE TABLE IF NOT EXISTS vehicles (
-        id TEXT PRIMARY KEY,
-        type INTEGER NOT NULL DEFAULT 1
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plate TEXT NOT NULL,
+        type INTEGER NOT NULL DEFAULT 1,
+        brand TEXT NOT NULL DEFAULT '',
+        model TEXT NOT NULL DEFAULT '',
+        year INTEGER
     );
     CREATE TABLE IF NOT EXISTS fuel_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         odm INTEGER NOT NULL,
         vendor INTEGER NOT NULL DEFAULT 0,
@@ -33,7 +37,7 @@ db.exec(`
     );
     CREATE TABLE IF NOT EXISTS charge_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         odm INTEGER NOT NULL,
         kwh REAL NOT NULL DEFAULT 0,
@@ -42,7 +46,7 @@ db.exec(`
     );
     CREATE TABLE IF NOT EXISTS tunnel_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         tunnel INTEGER NOT NULL,
         bound INTEGER NOT NULL,
@@ -52,7 +56,7 @@ db.exec(`
         ON tunnel_records (vehicle_id, date);
     CREATE TABLE IF NOT EXISTS parking_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         carpark TEXT NOT NULL,
         rental_type INTEGER NOT NULL,
@@ -62,7 +66,7 @@ db.exec(`
         ON parking_records (vehicle_id, date);
     CREATE TABLE IF NOT EXISTS fine_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         offences TEXT NOT NULL DEFAULT '[]',
         custom_offence TEXT,
@@ -73,7 +77,7 @@ db.exec(`
         ON fine_records (vehicle_id, date);
     CREATE TABLE IF NOT EXISTS service_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         odm INTEGER NOT NULL,
         items TEXT NOT NULL DEFAULT '[]',
@@ -83,7 +87,7 @@ db.exec(`
     );
     CREATE TABLE IF NOT EXISTS insurance_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         type INTEGER NOT NULL,
         broker TEXT,
@@ -92,19 +96,13 @@ db.exec(`
     );
     CREATE TABLE IF NOT EXISTS licence_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+        vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
         date TEXT NOT NULL,
         type INTEGER NOT NULL,
         fee REAL NOT NULL DEFAULT 0,
         UNIQUE (vehicle_id, date)
     );
 `);
-// Existing files predate the type column (immutably set at creation);
-// backfill anything that is not a valid 1-4 type to petrol (1).
-if (!db.prepare(`SELECT COUNT(*) AS n FROM pragma_table_info('vehicles') WHERE name='type'`).get().n) {
-    db.exec(`ALTER TABLE vehicles ADD COLUMN type INTEGER NOT NULL DEFAULT 1`);
-}
-db.exec(`UPDATE vehicles SET type=1 WHERE CAST(type AS INTEGER) NOT IN (1,2,3,4)`);
 console.log(`SQLite ready at ${path.resolve(dbPath)}`);
 
 const toQuestionMarks = (text) => text.replace(/\$(\d+)/g, '?');

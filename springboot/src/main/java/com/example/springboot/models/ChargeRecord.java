@@ -32,8 +32,8 @@ public class ChargeRecord {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "vehicle_id", length = 20)
-    private String vehicleId;
+    @Column(name = "vehicle_id")
+    private Integer vehicleId;
 
     @Column(name = "odm")
     private int odm;
@@ -58,11 +58,11 @@ public class ChargeRecord {
         return id;
     }
 
-    public String getVehicleId() {
+    public Integer getVehicleId() {
         return vehicleId;
     }
 
-    public void setVehicleId(String vehicleId) {
+    public void setVehicleId(Integer vehicleId) {
         this.vehicleId = vehicleId;
     }
 

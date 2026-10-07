@@ -27,14 +27,14 @@ public class TunnelRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<TunnelRecordDto> getAll(String vehicleId) {
+    public List<TunnelRecordDto> getAll(Integer vehicleId) {
         return tunnelRecords.findByVehicleIdOrderByDateDescIdDesc(vehicleId).stream()
                 .map(TunnelRecordDto::from)
                 .toList();
     }
 
     @Transactional
-    public Long add(String vehicleId, TunnelRecordDto.Request req) {
+    public Long add(Integer vehicleId, TunnelRecordDto.Request req) {
         if (req == null) return 0L;
         if (!vehicles.existsById(vehicleId)) return 0L;
         TunnelRecord r = new TunnelRecord();
@@ -47,7 +47,7 @@ public class TunnelRecordService {
     }
 
     @Transactional
-    public boolean deleteById(String vehicleId, long id) {
+    public boolean deleteById(Integer vehicleId, long id) {
         var existing = tunnelRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         tunnelRecords.delete(existing.get());
@@ -55,7 +55,7 @@ public class TunnelRecordService {
     }
 
     @Transactional
-    public UpdateResult update(String vehicleId, long id, TunnelRecordDto.Request req) {
+    public UpdateResult update(Integer vehicleId, long id, TunnelRecordDto.Request req) {
         if (req == null) return UpdateResult.NOT_FOUND;
         var existing = tunnelRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return UpdateResult.NOT_FOUND;

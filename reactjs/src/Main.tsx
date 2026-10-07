@@ -12,7 +12,7 @@ import VehicleRoutePage from './pages/VehicleRoutePage';
 
 function AppShell() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [currentVehicle, setCurrentVehicle] = useState('');
+  const [currentVehicle, setCurrentVehicle] = useState<number | ''>('');
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadSuccess, setLoadSuccess] = useState(true);
@@ -20,7 +20,14 @@ function AppShell() {
   useEffect(() => {
     getVehicles()
       .then(res => {
-        setVehicles((res.data ?? []).map(v => ({ id: v.id, type: normalizeVehicleType(v.type) })));
+        setVehicles((res.data ?? []).map(v => ({
+          id: v.id,
+          plate: v.plate ?? '',
+          type: normalizeVehicleType(v.type),
+          brand: v.brand ?? '',
+          model: v.model ?? '',
+          year: (typeof v.year === 'number' ? v.year : null),
+        })));
       })
       .catch(err => {
         console.error('Error fetching data:', err);

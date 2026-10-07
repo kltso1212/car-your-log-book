@@ -16,6 +16,7 @@ export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord)
     const record = chargeRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteChargeRecord(currentVehicle, record)
       .then(() => {
         setChargeRecords(prev => prev.filter((_, i) => i !== index));

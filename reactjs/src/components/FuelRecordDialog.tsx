@@ -78,6 +78,7 @@ export default function FuelRecordDialog({
       });
       onClose();
     };
+    if (currentVehicle === '') return alert('請選擇座駕');
     if (isEdit) {
       updateFuelRecord(currentVehicle, rec)
         .then(() => done({ ...rec, pricePerLitre: unitPrice }))

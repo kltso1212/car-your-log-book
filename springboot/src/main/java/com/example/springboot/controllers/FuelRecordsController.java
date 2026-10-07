@@ -30,13 +30,13 @@ public class FuelRecordsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<FuelRecordDto>> get(@PathVariable String id) {
+    public ResponseEntity<List<FuelRecordDto>> get(@PathVariable Integer id) {
         return ResponseEntity.ok(fuelRecordService.getAll(id));
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<FuelRecordDto.Message> post(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestBody FuelRecordDto.Request req) {
         boolean added = fuelRecordService.add(id, req);
         if (!added) {
@@ -54,7 +54,7 @@ public class FuelRecordsController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String id,
+            @PathVariable Integer id,
             @RequestParam int odm) {
         boolean ok = fuelRecordService.deleteByOdm(id, odm);
         return ok ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -62,7 +62,7 @@ public class FuelRecordsController {
 
     @PutMapping("/{vehicleId}/{id}")
     public ResponseEntity<FuelRecordDto.Message> put(
-            @PathVariable String vehicleId,
+            @PathVariable Integer vehicleId,
             @PathVariable long id,
             @RequestBody FuelRecordDto.Request req) {
         return switch (fuelRecordService.update(vehicleId, id, req)) {

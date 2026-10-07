@@ -8,9 +8,10 @@ namespace dotnet.Services
     public interface IVehicleService
     {
         Task<IEnumerable<VehicleDto>> GetAllAsync();
-        Task<VehicleDto?> GetByIdAsync(string id);
-        Task<bool> AddAsync(VehicleDto req);
-        Task<bool> DeleteByIdAsync(string id);
+        Task<VehicleDto?> GetByIdAsync(int id);
+        Task<int> AddAsync(VehicleDto req);
+        Task<bool> UpdateAsync(int id, VehicleDto req);
+        Task<bool> DeleteByIdAsync(int id);
     }
 
     public class VehicleService : IVehicleService
@@ -21,24 +22,40 @@ namespace dotnet.Services
             _context = context;
         }
         public IEnumerable<Vehicle> Vehicles => _context.Vehicles;
+        public static string NormalizePlate(string? plate) => (plate ?? string.Empty).Trim().ToUpper();
+        public static bool IsValidYear(int? year)
+        {
+            if (year is null) return true;
+            return year >= 1900 && year <= DateTime.Now.Year + 1;
+        }
         public async Task<IEnumerable<VehicleDto>> GetAllAsync()
         {
-            return await Task.Run(() => Vehicles.Select(v => v.Data).ToList());
+            return await Task.Run(() => Vehicles.OrderBy(v => v.Id).Select(v => v.Data).ToList());
         }
-        public async Task<VehicleDto?> GetByIdAsync(string id)
+        public async Task<VehicleDto?> GetByIdAsync(int id)
         {
             return await Task.Run(() => GetById(id)?.Data ?? null);
         }
-        public async Task<bool> AddAsync(VehicleDto req)
+        public async Task<int> AddAsync(VehicleDto req)
         {
-            var vehicle = await GetByIdAsync(req.Id);
-            if (vehicle is not null) return false;
+            var entity = await _context.Vehicles.AddAsync(new(req));
+            await _context.SaveChangesAsync();
+            return entity.Entity.Id;
+        }
+        public async Task<bool> UpdateAsync(int id, VehicleDto req)
+        {
+            var vehicle = await Task.Run(() => GetById(id));
+            if (vehicle is null) return false;
 
-            await _context.Vehicles.AddAsync(new(req));
+            vehicle.Plate = NormalizePlate(req.Plate);
+            vehicle.Type = req.Type;
+            vehicle.Brand = (req.Brand ?? string.Empty).Trim();
+            vehicle.Model = (req.Model ?? string.Empty).Trim();
+            vehicle.Year = req.Year;
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> DeleteByIdAsync(string id)
+        public async Task<bool> DeleteByIdAsync(int id)
         {
             var vehicle = await Task.Run(() => GetById(id));
             if (vehicle is null) return false;
@@ -47,9 +64,8 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        private Vehicle? GetById(string id)
+        private Vehicle? GetById(int id)
         {
-            id.ToUpper();
             return Vehicles.Where(v => v.Id == id).FirstOrDefault();
         }
     }

@@ -7,11 +7,11 @@ namespace dotnet.Services
 {
     public interface IFuelRecordService
     {
-        Task<IEnumerable<FuelRecordDto>> GetAllAsync(string vehicleId);
-        Task<FuelRecord?> GetByOdmAsync(string vehicleId, int odm);
-        Task<bool> AddAsync(string vehicleId, FuelRecordDto req);
-        Task<bool> DeleteByOdmAsync(string vehicleId, int odm);
-        Task<UpdateOutcome> UpdateAsync(string vehicleId, long id, FuelRecordDto req);
+        Task<IEnumerable<FuelRecordDto>> GetAllAsync(int vehicleId);
+        Task<FuelRecord?> GetByOdmAsync(int vehicleId, int odm);
+        Task<bool> AddAsync(int vehicleId, FuelRecordDto req);
+        Task<bool> DeleteByOdmAsync(int vehicleId, int odm);
+        Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, FuelRecordDto req);
     }
 
     public enum UpdateOutcome { Updated, NotFound, Conflict }
@@ -25,17 +25,15 @@ namespace dotnet.Services
         }
         public IEnumerable<Vehicle> Vehicles => _context.Vehicles;
         public IEnumerable<FuelRecord> FuelRecords => _context.FuelRecords;
-        public async Task<IEnumerable<FuelRecordDto>> GetAllAsync(string vehicleId)
+        public async Task<IEnumerable<FuelRecordDto>> GetAllAsync(int vehicleId)
         {
-            vehicleId = vehicleId.ToUpper();
             return await Task.Run(() => FuelRecords.Where(f => f.VehicleId == vehicleId).Select(f => f.Data).ToList());
         }
-        public async Task<FuelRecord?> GetByOdmAsync(string vehicleId, int odm)
+        public async Task<FuelRecord?> GetByOdmAsync(int vehicleId, int odm)
         {
-            vehicleId = vehicleId.ToUpper();
             return await Task.Run(() => FuelRecords.Where(f => f.VehicleId == vehicleId && f.Odm == odm).FirstOrDefault());
         }
-        public async Task<bool> AddAsync(string vehicleId, FuelRecordDto req)
+        public async Task<bool> AddAsync(int vehicleId, FuelRecordDto req)
         {
             var vehicle = await Task.Run(() => GetVehicle(vehicleId));
             if (vehicle is null) return false;
@@ -46,7 +44,7 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> DeleteByOdmAsync(string vehicleId, int odm)
+        public async Task<bool> DeleteByOdmAsync(int vehicleId, int odm)
         {
             var fuelRecord = await Task.Run(() => GetByOdm(vehicleId, odm));
             if (fuelRecord is null) return false;
@@ -55,7 +53,7 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<UpdateOutcome> UpdateAsync(string vehicleId, long id, FuelRecordDto req)
+        public async Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, FuelRecordDto req)
         {
             var fuelRecord = await Task.Run(() =>
                 FuelRecords.Where(f => f.Id == id && f.VehicleId == vehicleId).FirstOrDefault());
@@ -75,14 +73,12 @@ namespace dotnet.Services
             await _context.SaveChangesAsync();
             return UpdateOutcome.Updated;
         }
-        private Vehicle? GetVehicle(string vehicleId)
+        private Vehicle? GetVehicle(int vehicleId)
         {
-            vehicleId.ToUpper();
             return Vehicles.Where(v => v.Id == vehicleId).FirstOrDefault();
         }
-        private FuelRecord? GetByOdm(string vehicleId, int odm)
+        private FuelRecord? GetByOdm(int vehicleId, int odm)
         {
-            vehicleId.ToUpper();
             return FuelRecords.Where(f => f.VehicleId == vehicleId && f.Odm == odm).FirstOrDefault();
         }
     }

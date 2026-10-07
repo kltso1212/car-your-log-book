@@ -1,22 +1,54 @@
 """Pydantic schemas. Wire format matches nodejs/server.js exactly:
 camelCase fuelType / pricePerLitre, date as 'YYYY-MM-DD' string.
 
-Vehicle type is int: 1 petrol / 2 hybrid / 3 electric / 4 diesel.
-Set once at creation; no update endpoint exists so it is immutable.
+Vehicle: id INTEGER PK (surrogate), plate TEXT (non-unique, upper-cased),
+type int 1 petrol / 2 hybrid / 3 electric / 4 diesel (changeable via PUT),
+brand/model TEXT, year int|null (mutable via PUT).
 """
 import datetime
 
 from pydantic import BaseModel, ConfigDict
 
 
+def normalize_plate(v: object) -> str:
+    return str(v or "").strip().upper()
+
+
+def is_valid_year(v: object) -> bool:
+    if v is None or v == "":
+        return True
+    if isinstance(v, bool):
+        return False
+    try:
+        n = int(v)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return False
+    return 1900 <= n <= datetime.date.today().year + 1
+
+
 class VehicleIn(BaseModel):
-    id: str
+    plate: str
     type: int = 1
+    brand: str = ""
+    model: str = ""
+    year: int | None = None
+
+
+class VehicleUpdate(BaseModel):
+    plate: str
+    type: int = 1
+    brand: str = ""
+    model: str = ""
+    year: int | None = None
 
 
 class VehicleOut(BaseModel):
-    id: str
+    id: int
+    plate: str
     type: int = 1
+    brand: str = ""
+    model: str = ""
+    year: int | None = None
 
 
 class FuelRecordIn(BaseModel):
@@ -37,6 +69,10 @@ class FuelRecordOut(FuelRecordIn):
 
 class Message(BaseModel):
     message: str
+
+
+class VehicleCreated(Message):
+    id: int
 
 
 class TunnelRecordIn(BaseModel):

@@ -1,6 +1,6 @@
 ﻿import axios from 'axios';
 import type { FuelRecord } from '../types';
-import type { VehicleType } from '../types/Vehicle';
+import type { NewVehicleInput, Vehicle } from '../types/Vehicle';
 
 const getBaseUrl = (): string => {
   const envUrl = (process.env.REACT_APP_API_URL || 'http://localhost:5000').trim();
@@ -35,26 +35,30 @@ const api = axios.create({
 });
 
 export const getVehicles = async () => {
-  return api.get<{ id: string; type: number }[]>('/api/vehicles');
+  return api.get<Vehicle[]>('/api/vehicles');
 };
 
-export const addVehicle = async (id: string, type: VehicleType = 1) => {
-  return api.post('/api/vehicles', { id, type });
+export const addVehicle = async (input: NewVehicleInput) => {
+  return api.post<{ message: string; id: number }>('/api/vehicles', input);
 };
 
-export const deleteVehicle = async (id: string) => {
+export const updateVehicle = async (id: number, input: NewVehicleInput) => {
+  return api.put(`/api/vehicles/${id}`, input);
+};
+
+export const deleteVehicle = async (id: number) => {
   return api.delete(`/api/vehicles/${id}`);
 };
 
-export const getFuelRecords = async (id: string) => {
+export const getFuelRecords = async (id: number) => {
   return api.get<FuelRecord[]>(`api/fuelrecords/${id}`);
 };
 
-export const addFuelRecord = async (id: string, fuelRecord: FuelRecord) => {
+export const addFuelRecord = async (id: number, fuelRecord: FuelRecord) => {
   return api.post(`api/fuelrecords/${id}`, fuelRecord);
 };
 
-export const deleteFuelRecord = async (id: string, fuelRecord: FuelRecord) => {
+export const deleteFuelRecord = async (id: number, fuelRecord: FuelRecord) => {
   const { odm } = fuelRecord;
   return api.delete(`/api/fuelrecords/${id}`, { params: { odm } });
 };
@@ -62,7 +66,7 @@ export const deleteFuelRecord = async (id: string, fuelRecord: FuelRecord) => {
 export const recordKey = (fuelRecord: FuelRecord): string | number =>
   fuelRecord.id ?? (fuelRecord as { Id?: string | number }).Id ?? fuelRecord.odm;
 
-export const updateFuelRecord = async (vehicleId: string, fuelRecord: FuelRecord) => {
+export const updateFuelRecord = async (vehicleId: number, fuelRecord: FuelRecord) => {
   return api.put(`/api/fuelrecords/${vehicleId}/${recordKey(fuelRecord)}`, fuelRecord);
 };
 
@@ -77,19 +81,19 @@ export interface ChargeRecord {
 
 const chargeKey = (r: ChargeRecord): string | number => r.id ?? r.odm;
 
-export const getChargeRecords = async (id: string) => {
+export const getChargeRecords = async (id: number) => {
   return api.get<ChargeRecord[]>(`api/chargerecords/${id}`);
 };
 
-export const addChargeRecord = async (id: string, rec: ChargeRecord) => {
+export const addChargeRecord = async (id: number, rec: ChargeRecord) => {
   return api.post(`api/chargerecords/${id}`, rec);
 };
 
-export const updateChargeRecord = async (vehicleId: string, rec: ChargeRecord) => {
+export const updateChargeRecord = async (vehicleId: number, rec: ChargeRecord) => {
   return api.put(`/api/chargerecords/${vehicleId}/${chargeKey(rec)}`, rec);
 };
 
-export const deleteChargeRecord = async (id: string, rec: ChargeRecord) => {
+export const deleteChargeRecord = async (id: number, rec: ChargeRecord) => {
   return api.delete(`/api/chargerecords/${id}`, { params: { odm: rec.odm } });
 };
 
@@ -101,19 +105,19 @@ export interface TunnelRecord {
   fee: number;
 }
 
-export const getTunnelRecords = async (id: string) => {
+export const getTunnelRecords = async (id: number) => {
   return api.get<TunnelRecord[]>(`api/tunnelrecords/${id}`);
 };
 
-export const addTunnelRecord = async (id: string, rec: TunnelRecord) => {
+export const addTunnelRecord = async (id: number, rec: TunnelRecord) => {
   return api.post(`api/tunnelrecords/${id}`, rec);
 };
 
-export const updateTunnelRecord = async (vehicleId: string, rec: TunnelRecord) => {
+export const updateTunnelRecord = async (vehicleId: number, rec: TunnelRecord) => {
   return api.put(`/api/tunnelrecords/${vehicleId}/${rec.id ?? 0}`, rec);
 };
 
-export const deleteTunnelRecord = async (vehicleId: string, rec: TunnelRecord) => {
+export const deleteTunnelRecord = async (vehicleId: number, rec: TunnelRecord) => {
   return api.delete(`/api/tunnelrecords/${vehicleId}/${rec.id ?? 0}`);
 };
 
@@ -125,19 +129,19 @@ export interface ParkingRecord {
   fee: number;
 }
 
-export const getParkingRecords = async (id: string) => {
+export const getParkingRecords = async (id: number) => {
   return api.get<ParkingRecord[]>(`api/parkingrecords/${id}`);
 };
 
-export const addParkingRecord = async (id: string, rec: ParkingRecord) => {
+export const addParkingRecord = async (id: number, rec: ParkingRecord) => {
   return api.post(`api/parkingrecords/${id}`, rec);
 };
 
-export const updateParkingRecord = async (vehicleId: string, rec: ParkingRecord) => {
+export const updateParkingRecord = async (vehicleId: number, rec: ParkingRecord) => {
   return api.put(`/api/parkingrecords/${vehicleId}/${rec.id ?? 0}`, rec);
 };
 
-export const deleteParkingRecord = async (vehicleId: string, rec: ParkingRecord) => {
+export const deleteParkingRecord = async (vehicleId: number, rec: ParkingRecord) => {
   return api.delete(`/api/parkingrecords/${vehicleId}/${rec.id ?? 0}`);
 };
 
@@ -150,19 +154,19 @@ export interface FineRecord {
   penalty: number;
 }
 
-export const getFineRecords = async (id: string) => {
+export const getFineRecords = async (id: number) => {
   return api.get<FineRecord[]>(`api/finerecords/${id}`);
 };
 
-export const addFineRecord = async (id: string, rec: Omit<FineRecord, 'id'>) => {
+export const addFineRecord = async (id: number, rec: Omit<FineRecord, 'id'>) => {
   return api.post(`api/finerecords/${id}`, rec);
 };
 
-export const updateFineRecord = async (vehicleId: string, rec: FineRecord) => {
+export const updateFineRecord = async (vehicleId: number, rec: FineRecord) => {
   return api.put(`/api/finerecords/${vehicleId}/${rec.id ?? 0}`, rec);
 };
 
-export const deleteFineRecord = async (vehicleId: string, rec: FineRecord) => {
+export const deleteFineRecord = async (vehicleId: number, rec: FineRecord) => {
   return api.delete(`/api/finerecords/${vehicleId}/${rec.id ?? 0}`);
 };
 
@@ -175,19 +179,19 @@ export interface ServiceRecord {
   price: number;
 }
 
-export const getServiceRecords = async (id: string) => {
+export const getServiceRecords = async (id: number) => {
   return api.get<ServiceRecord[]>(`api/servicerecords/${id}`);
 };
 
-export const addServiceRecord = async (id: string, rec: Omit<ServiceRecord, 'id'>) => {
+export const addServiceRecord = async (id: number, rec: Omit<ServiceRecord, 'id'>) => {
   return api.post(`api/servicerecords/${id}`, rec);
 };
 
-export const updateServiceRecord = async (vehicleId: string, rec: ServiceRecord) => {
+export const updateServiceRecord = async (vehicleId: number, rec: ServiceRecord) => {
   return api.put(`/api/servicerecords/${vehicleId}/${rec.id ?? 0}`, rec);
 };
 
-export const deleteServiceRecord = async (id: string, rec: ServiceRecord) => {
+export const deleteServiceRecord = async (id: number, rec: ServiceRecord) => {
   return api.delete(`/api/servicerecords/${id}`, { params: { odm: rec.odm } });
 };
 
@@ -206,34 +210,34 @@ export interface LicenceRecord {
   fee: number;
 }
 
-export const getInsuranceRecords = async (id: string) => {
+export const getInsuranceRecords = async (id: number) => {
   return api.get<InsuranceRecord[]>(`api/insurancerecords/${id}`);
 };
 
-export const addInsuranceRecord = async (id: string, rec: Omit<InsuranceRecord, 'id'>) => {
+export const addInsuranceRecord = async (id: number, rec: Omit<InsuranceRecord, 'id'>) => {
   return api.post(`api/insurancerecords/${id}`, rec);
 };
 
-export const updateInsuranceRecord = async (vehicleId: string, rec: InsuranceRecord) => {
+export const updateInsuranceRecord = async (vehicleId: number, rec: InsuranceRecord) => {
   return api.put(`/api/insurancerecords/${vehicleId}/${rec.id ?? 0}`, rec);
 };
 
-export const deleteInsuranceRecord = async (vehicleId: string, rec: InsuranceRecord) => {
+export const deleteInsuranceRecord = async (vehicleId: number, rec: InsuranceRecord) => {
   return api.delete(`/api/insurancerecords/${vehicleId}/${rec.id ?? 0}`);
 };
 
-export const getLicenceRecords = async (id: string) => {
+export const getLicenceRecords = async (id: number) => {
   return api.get<LicenceRecord[]>(`api/licencerecords/${id}`);
 };
 
-export const addLicenceRecord = async (id: string, rec: Omit<LicenceRecord, 'id'>) => {
+export const addLicenceRecord = async (id: number, rec: Omit<LicenceRecord, 'id'>) => {
   return api.post(`api/licencerecords/${id}`, rec);
 };
 
-export const updateLicenceRecord = async (vehicleId: string, rec: LicenceRecord) => {
+export const updateLicenceRecord = async (vehicleId: number, rec: LicenceRecord) => {
   return api.put(`/api/licencerecords/${vehicleId}/${rec.id ?? 0}`, rec);
 };
 
-export const deleteLicenceRecord = async (vehicleId: string, rec: LicenceRecord) => {
+export const deleteLicenceRecord = async (vehicleId: number, rec: LicenceRecord) => {
   return api.delete(`/api/licencerecords/${vehicleId}/${rec.id ?? 0}`);
 };

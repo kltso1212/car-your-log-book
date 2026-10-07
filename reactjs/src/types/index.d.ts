@@ -26,8 +26,8 @@ export interface FuelRecord {
 export interface VehicleContextValue {
   vehicles: Vehicle[];
   setVehicles: Dispatch<SetStateAction<Vehicle[]>>;
-  currentVehicle: string;
-  setCurrentVehicle: Dispatch<SetStateAction<string>>;
+  currentVehicle: number | '';
+  setCurrentVehicle: Dispatch<SetStateAction<number | ''>>;
 }
 
 export interface PageContextValue {

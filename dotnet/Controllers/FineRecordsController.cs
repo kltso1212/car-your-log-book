@@ -12,13 +12,13 @@ namespace dotnet.Controllers
         public FineRecordsController(IFineRecordService service) { _fineRecordService = service; }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             var records = await _fineRecordService.GetAllAsync(id);
             return (records.Any()) ? Ok(records) : NoContent();
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> Post(string id, [FromBody] FineRecordDto req)
+        public async Task<IActionResult> Post(int id, [FromBody] FineRecordDto req)
         {
             var newId = await _fineRecordService.AddAsync(id, req);
             return (newId > 0)
@@ -26,13 +26,13 @@ namespace dotnet.Controllers
                 : NotFound(new { message = "找不到車輛" });
         }
         [HttpDelete("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Delete(string vehicleId, long id)
+        public async Task<IActionResult> Delete(int vehicleId, long id)
         {
             var result = await _fineRecordService.DeleteByIdAsync(vehicleId, id);
             return result ? NoContent() : NotFound(id);
         }
         [HttpPut("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Put(string vehicleId, long id, [FromBody] FineRecordDto req)
+        public async Task<IActionResult> Put(int vehicleId, long id, [FromBody] FineRecordDto req)
         {
             var result = await _fineRecordService.UpdateAsync(vehicleId, id, req);
             return result switch

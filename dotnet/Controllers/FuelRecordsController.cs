@@ -12,25 +12,25 @@ namespace dotnet.Controllers
         public FuelRecordsController(IFuelRecordService service) { _FuelRecordService = service; }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             var fuelRecords = await _FuelRecordService.GetAllAsync(id);
             return (fuelRecords.Any()) ? Ok(fuelRecords) : NoContent();
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> Post(string id, [FromBody] FuelRecordDto req)
+        public async Task<IActionResult> Post(int id, [FromBody] FuelRecordDto req)
         {
             var vehicle = await _FuelRecordService.AddAsync(id, req);
             return Created();
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id, [FromQuery] int odm)
+        public async Task<IActionResult> Delete(int id, [FromQuery] int odm)
         {
             var result = await _FuelRecordService.DeleteByOdmAsync(id, odm);
             return result ? NoContent() : NotFound(id);
         }
         [HttpPut("{vehicleId}/{id:long}")]
-        public async Task<IActionResult> Put(string vehicleId, long id, [FromBody] FuelRecordDto req)
+        public async Task<IActionResult> Put(int vehicleId, long id, [FromBody] FuelRecordDto req)
         {
             var result = await _FuelRecordService.UpdateAsync(vehicleId, id, req);
             return result switch

@@ -21,6 +21,7 @@ export default function ParkingCards({
     const record = parkingRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteParkingRecord(currentVehicle, record)
       .then(() => {
         setParkingRecords(prev => prev.filter((_, i) => i !== index));

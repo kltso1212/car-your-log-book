@@ -62,6 +62,7 @@ export default function ChargeDialog({
       });
       onClose();
     };
+    if (currentVehicle === '') return alert('請選擇座駕');
     if (isEdit) {
       updateChargeRecord(currentVehicle, rec)
         .then(() => done({ ...rec, pricePerKwh: unitPrice }))

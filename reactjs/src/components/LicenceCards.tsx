@@ -21,6 +21,7 @@ export default function LicenceCards({
     const record = licenceRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteLicenceRecord(currentVehicle, record)
       .then(() => {
         setLicenceRecords(prev => prev.filter((_, i) => i !== index));

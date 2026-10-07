@@ -10,11 +10,11 @@ import java.util.Optional;
 @Repository
 public interface ChargeRecordRepository extends JpaRepository<ChargeRecord, Long> {
 
-    List<ChargeRecord> findByVehicleIdOrderByOdmAsc(String vehicleId);
+    List<ChargeRecord> findByVehicleIdOrderByOdmAsc(Integer vehicleId);
 
-    Optional<ChargeRecord> findByVehicleIdAndOdm(String vehicleId, int odm);
+    Optional<ChargeRecord> findByVehicleIdAndOdm(Integer vehicleId, int odm);
 
-    boolean existsByVehicleIdAndOdm(String vehicleId, int odm);
+    boolean existsByVehicleIdAndOdm(Integer vehicleId, int odm);
 
-    void deleteByVehicleIdAndOdm(String vehicleId, int odm);
+    void deleteByVehicleIdAndOdm(Integer vehicleId, int odm);
 }

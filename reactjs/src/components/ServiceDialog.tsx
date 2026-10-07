@@ -74,6 +74,7 @@ export default function ServiceDialog({
       });
       onClose();
     };
+    if (currentVehicle === '') return alert('請選擇座駕');
     if (isEdit) {
       const id = initial!.id;
       if (id === undefined) return alert('找不到記錄!');

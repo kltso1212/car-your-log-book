@@ -17,6 +17,7 @@ export default function InsuranceTable({ onEdit }: { onEdit: (record: InsuranceR
     const record = insuranceRecords.at(index);
     if (!record) return;
 
+    if (currentVehicle === '') return;
     deleteInsuranceRecord(currentVehicle, record)
       .then(() => {
         setInsuranceRecords(prev => prev.filter((_, i) => i !== index));
