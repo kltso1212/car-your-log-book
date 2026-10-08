@@ -1,5 +1,5 @@
 // type: insurance 1 第三者保險 / 2 綜合汽車保險,
-// licence 1 四個月 / 2 十二個月. Mirrors the android dialog constants.
+// licence 1 四個月 / 2 十二個月.
 export const insuranceTypes = [
   { id: 1, tc: '第三者保險' },
   { id: 2, tc: '綜合汽車保險' },

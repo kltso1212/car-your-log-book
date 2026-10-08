@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Mirrors dotnet/Services/ServiceRecordService.cs: fuel-shaped CRUD keyed
+ * Fuel-shaped CRUD keyed
  * on (vehicle_id, odm), items as a JSON int[].
  */
 @Service

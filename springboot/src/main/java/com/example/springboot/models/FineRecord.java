@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Mirrors dotnet/Models/FineRecord.cs.
  * Table: fine_records(id PK, vehicle_id, date, offences, custom_offence,
  * location, penalty). offences is a JSON int[] in TEXT (3xx domain).
  * No UNIQUE constraint: bad days happen.

@@ -15,7 +15,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet/Models/ChargeRecord.cs.
  * Table: charge_records(id PK, vehicle_id, date, odm, kwh, price).
  * odm is unique per vehicle only (UNIQUE vehicle_id, odm), not the table PK.
  * JSON names (pricePerKwh) match what the react frontend expects.

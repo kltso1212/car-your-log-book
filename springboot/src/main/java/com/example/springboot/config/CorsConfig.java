@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Mirrors the CORS policy in dotnet/Program.cs and nodejs/server.js:
  * CORS_ORIGIN=* (default) allows any PC/phone on the LAN with no IP edits.
  * In production/cloud set CORS_ORIGIN=https://&lt;frontend-url&gt;
  * (comma-separated list supported).

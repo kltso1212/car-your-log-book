@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Mirrors dotnet/Models/ServiceRecord.cs.
  * Table: service_records(id PK, vehicle_id, date, odm, items, custom_item,
  * price). items is a JSON int[] in TEXT (2xx domain).
  * UNIQUE(vehicle_id, odm) like fuel — one service per mileage point.

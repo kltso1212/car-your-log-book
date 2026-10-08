@@ -379,7 +379,7 @@ h1 .icon-button {
   color: var(--text-muted);
 }
 
-/* Mobile card list (mirrors the android FlatList cards). */
+/* Mobile card list. */
 .cards {
   display: flex;
   flex-direction: column;

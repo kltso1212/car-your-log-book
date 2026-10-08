@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Mirrors dotnet/Services/FuelRecordService.cs:
  * GetAll(vehicleId) ordered by odm / GetByOdm / Add (false when vehicle
  * missing or odm duplicate) / DeleteByOdm (false when missing) /
  * Update (by surrogate id, scoped to vehicle).

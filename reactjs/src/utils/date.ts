@@ -1,4 +1,4 @@
-// ISO date helpers (mirrors android/src/date.ts). Built from local
+// ISO date helpers. Built from local
 // components — never toISOString() — so late evenings don't slip a day.
 export function toISODate(d: Date): string {
   const y = d.getFullYear();

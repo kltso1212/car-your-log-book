@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Mirrors dotnet/Controllers/FineRecordsController.cs.
- */
 @RestController
 @RequestMapping("/api/finerecords")
 public class FineRecordsController {

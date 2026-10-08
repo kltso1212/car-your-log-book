@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Mirrors dotnet/Controllers/VehiclesController.cs (route api/vehicles).
  * Status codes aligned with the Node.js backend + frontend expectations:
  * empty list -> 200 [] (frontend handles res.data ?? []), duplicate -> 409.
  */

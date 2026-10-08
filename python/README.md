@@ -1,4 +1,4 @@
-# fuel-app Python backend — FastAPI port of nodejs/server.js
+# Python backend
 
 Same 6 endpoints, status codes and messages as the Node backend:
 

@@ -14,7 +14,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet/Models/DatedRecords.cs (LicenceRecord).
  * Table: licence_records(id PK, vehicle_id, date, type, fee).
  * UNIQUE(vehicle_id, date) — one licence per start date.
  */

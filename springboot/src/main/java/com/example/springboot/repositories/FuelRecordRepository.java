@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface FuelRecordRepository extends JpaRepository<FuelRecord, Long> {
 
-    /** Mirrors the Node.js ORDER BY odm listing. */
     List<FuelRecord> findByVehicleIdOrderByOdmAsc(Integer vehicleId);
 
     Optional<FuelRecord> findByVehicleIdAndOdm(Integer vehicleId, int odm);

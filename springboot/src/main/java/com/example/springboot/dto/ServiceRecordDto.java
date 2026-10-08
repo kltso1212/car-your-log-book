@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Mirrors dotnet ServiceRecordDto. items travels as a JSON int[].
+ * items travels as a JSON int[].
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ServiceRecordDto(

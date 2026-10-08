@@ -7,9 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet FuelRecordDto. pricePerLitre is computed server-side exactly
- * like nodejs/server.js (COALESCE(price / NULLIF(litre,0), 0)) and returned
- * so reactjs/src/services/api.ts needs no change.
+ * pricePerLitre is computed server-side (COALESCE(price / NULLIF(litre,0), 0))
+ * and returned so reactjs/src/services/api.ts needs no change.
  */
 public record FuelRecordDto(
         Long id,

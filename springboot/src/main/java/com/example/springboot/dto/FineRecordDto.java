@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Mirrors dotnet FineRecordDto. offences travels as a JSON int[].
+ * offences travels as a JSON int[].
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record FineRecordDto(

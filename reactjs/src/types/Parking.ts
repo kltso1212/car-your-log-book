@@ -1,4 +1,4 @@
-// Rental type: 1 時租 / 2 月租. Mirrors android/src/data.ts rentalTypes.
+// Rental type: 1 時租 / 2 月租.
 export const rentalTypes = [
   { en: 'Hourly', tc: '時租' },
   { en: 'Monthly', tc: '月租' },

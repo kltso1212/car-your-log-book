@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet/Models/ParkingRecord.cs.
  * Table: parking_records(id PK, vehicle_id, date, carpark, rental_type, fee).
  * No UNIQUE constraint: multiple parks per day are normal.
  */

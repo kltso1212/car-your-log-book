@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Mirrors dotnet/Services/TunnelRecordService.cs. Deletes key on the
+ * Deletes key on the
  * surrogate id (no natural unique key exists for tunnel trips).
  */
 @Service

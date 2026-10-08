@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet ParkingRecordDto. rentalType: 1 時租 / 2 月租.
+ * rentalType: 1 時租 / 2 月租.
  */
 public record ParkingRecordDto(
         Long id,

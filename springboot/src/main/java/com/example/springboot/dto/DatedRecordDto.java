@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet DatedRecords.cs DTOs. type: insurance 1 第三者 / 2 綜合,
+ * type: insurance 1 第三者 / 2 綜合,
  * licence 1 四個月 / 2 十二個月.
  */
 public final class DatedRecordDto {

@@ -11,7 +11,7 @@ load_dotenv()
 
 from routers import chargerecords, datedrecords, finerecords, fuelrecords, parkingrecords, servicerecords, tunnelrecords, vehicles  # noqa: E402
 
-app = FastAPI(title="fuel-app")
+app = FastAPI(title="vehicle-management")
 
 cors_origin = (os.getenv("CORS_ORIGIN", "*") or "*").strip()
 if cors_origin in ("", "*"):

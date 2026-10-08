@@ -1,5 +1,5 @@
-"""GET/POST/PUT/DELETE /api/fuelrecords. Mirrors nodejs/server.js semantics,
-including pricePerLitre computed in SQL and the Chinese messages.
+"""GET/POST/PUT/DELETE /api/fuelrecords with pricePerLitre computed in SQL
+and the Chinese messages.
 """
 import sqlite3
 from fastapi import APIRouter, Response, status

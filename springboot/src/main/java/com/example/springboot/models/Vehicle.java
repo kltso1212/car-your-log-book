@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Mirrors dotnet/Models/Vehicle.cs.
  * Table: vehicles(id INTEGER PK, plate, type, brand, model, year).
  * plate is non-unique: the same plate may appear on 2+ rows (plate reuse).
  */

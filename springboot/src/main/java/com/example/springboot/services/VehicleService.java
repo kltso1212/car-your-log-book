@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Mirrors dotnet/Services/VehicleService.cs:
  * GetAll / GetById / Add (returns new id) / Update / DeleteById.
  * Plate is non-unique: duplicates are allowed (plate reuse for a new car).
  */

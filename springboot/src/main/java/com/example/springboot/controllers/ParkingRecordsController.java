@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Mirrors dotnet/Controllers/ParkingRecordsController.cs.
- */
 @RestController
 @RequestMapping("/api/parkingrecords")
 public class ParkingRecordsController {

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet ChargeRecordDto. pricePerKwh is computed server-side.
+ * pricePerKwh is computed server-side.
  */
 public record ChargeRecordDto(
         Long id,

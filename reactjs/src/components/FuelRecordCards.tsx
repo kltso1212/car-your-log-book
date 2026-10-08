@@ -7,8 +7,7 @@ import { VehicleContext } from '../contexts/VehicleContext';
 import { FuelRecordContext } from '../contexts/FuelRecordContext';
 import type { FuelRecord } from '../types';
 
-// Mobile card list (same layout as the android FlatList): used below the
-// 768px breakpoint instead of FuelRecordTable. Edit/delete mirror android.
+// Mobile card list: used below the 768px breakpoint instead of FuelRecordTable.
 export default function FuelRecordCards({
   onEdit,
 }: {

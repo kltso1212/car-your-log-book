@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Mirrors dotnet/Services/DatedRecordServices.cs. Both tables carry
+ * Both tables carry
  * UNIQUE(vehicle_id, date): constraint violations surface as CONFLICT.
  */
 @Service

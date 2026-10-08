@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * Mirrors dotnet/Controllers/ServiceRecordsController.cs.
- */
 @RestController
 @RequestMapping("/api/servicerecords")
 public class ServiceRecordsController {

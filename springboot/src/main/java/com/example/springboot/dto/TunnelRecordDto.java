@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
 
-/**
- * Mirrors dotnet TunnelRecordDto.
- */
 public record TunnelRecordDto(
         Long id,
         @JsonFormat(pattern = "yyyy-MM-dd") LocalDate date,

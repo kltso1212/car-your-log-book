@@ -1,4 +1,4 @@
-# fuel-app Spring Boot backend — port of dotnet/
+# Spring Boot backend/
 
 Same routes as `dotnet/Controllers` (`api/vehicles`, `api/fuelrecords`) against
 the shared `vehicles` / `fuel_records` tables. Status codes are aligned with

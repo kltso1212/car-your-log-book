@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet/Models/TunnelRecord.cs.
  * Table: tunnel_records(id PK, vehicle_id, date, tunnel, bound, fee).
  * No UNIQUE constraint: same tunnel twice a day is normal.
  */

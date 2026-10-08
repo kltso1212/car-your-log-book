@@ -14,7 +14,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet/Models/DatedRecords.cs (InsuranceRecord).
  * Table: insurance_records(id PK, vehicle_id, date, type, broker, fee).
  * UNIQUE(vehicle_id, date) — one policy per start date.
  */

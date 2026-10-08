@@ -15,7 +15,6 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
 /**
- * Mirrors dotnet/Models/FuelRecord.cs.
  * Table: fuel_records(id PK, vehicle_id, date, odm, vendor, fuel_type, litre, price).
  * odm is unique per vehicle only (UNIQUE vehicle_id, odm), not the table PK.
  * JSON names (fuelType, pricePerLitre) match what reactjs/src/services/api.ts expects.

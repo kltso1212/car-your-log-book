@@ -1,5 +1,5 @@
-"""GET/POST/PUT/DELETE /api/vehicles. Mirrors nodejs/server.js semantics:
-list ordered by id, 200 + validation 400s with the same Chinese messages.
+"""GET/POST/PUT/DELETE /api/vehicles: list ordered by id, 200 + validation
+400s with the Chinese messages.
 plate is non-unique (same plate may appear on 2+ rows for plate reuse).
 """
 import sqlite3
