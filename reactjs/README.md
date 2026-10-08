@@ -1,70 +1,96 @@
-# Getting Started with Create React App
+# reactjs — frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React + TypeScript single-page app for 車理數簿. Talks to any one of the
+four backends (`nodejs`, `python`, `dotnet`, `springboot`) over the shared
+REST API — see the [root README](../README.md) for the route table.
 
-## Available Scripts
+## Stack
 
-In the project directory, you can run:
+* [Create React App](https://github.com/facebook/create-react-app) (`react-scripts` 5)
+* React 19, TypeScript, `react-router-dom` 7, `axios`
+* Docker image: multi-stage build → `nginx:alpine` (serves `build/` + optional `/api` proxy)
 
-### `npm start`
+## Structure
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+| Path | Purpose |
+|---|---|
+| `src/Main.tsx` | Router + app shell: vehicle picker, navbar, routes |
+| `src/pages/` | One page per tab (`FuelRecordPage`, `ChargePage`, `ServicePage`, `InsurancePage`, `LicencePage`, `TunnelPage`, `ParkingPage`, `FinePage`, `SummaryPage`, …) |
+| `src/components/` | Per-record table/card/dialog triplets, `VehicleSelect`, `NavigationBar`, `VehicleDialog` |
+| `src/services/api.ts` | axios instance + all API calls; base-URL resolution |
+| `src/contexts/` | React contexts (vehicle, current page, per-record lists) |
+| `src/types/` | Shared types + lookup-id constants (mirror `docs/lookup-ids.md`) |
+| `src/utils/` | Sorters, fuel stats, date/calendar/expiry helpers |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Routes
 
-### `npm test`
+| Path | Meaning |
+|---|---|
+| `/` | Home / vehicle picker |
+| `/:slug` | Tab without a vehicle selected → prompts to pick one |
+| `/vehicles/:vehicleId/:slug` | Canonical per-vehicle page; vehicle + tab persist in the URL |
+| `/vehicles/:vehicleId` | Redirects to `…/fuel` (or `…/charge` for EVs) |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Tab slugs (`src/types/Page.ts`):
+`summary` · `fuel` · `charge` · `service` · `insurance` · `licence` ·
+`tunnel` · `parking` · `fine`.
 
-### `npm run build`
+Electric vehicles (type 3) swap `fuel` ↔ `charge`: the default landing tab
+and the allowed slug follow the vehicle's powertrain.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## API base URL (`src/services/api.ts`)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+`REACT_APP_API_URL` is read at **build time**, then adjusted at runtime:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Value starts with `/` (e.g. `/api`) → used as-is (single-origin nginx proxy).
+2. Non-localhost URL (cloud backend) → used as-is.
+3. `localhost` + page opened via LAN IP/hostname → the **page's hostname** is
+   substituted in, so a phone at `http://192.168.x.x:3000` hits
+   `http://192.168.x.x:5000` with no rebuild.
 
-### `npm run eject`
+Timeout: `REACT_APP_API_TIMEOUT_MS` (default 5000).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Run
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```powershell
+cd reactjs
+copy .env.example .env     # defaults work for local + LAN
+npm install
+npm start                  # http://localhost:3000
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Other scripts:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```powershell
+npm test        # Jest, interactive watch mode
+npm run build   # production bundle → build/
+```
 
-## Learn More
+### Environment (`.env`)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+| Var | Default | Notes |
+|---|---|---|
+| `REACT_APP_API_URL` | `http://localhost:5000` | Baked at build time; see resolution rules above |
+| `REACT_APP_API_TIMEOUT_MS` | `5000` | axios timeout |
+| `PORT` / `HOST` | `3000` / `0.0.0.0` | CRA dev server |
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Docker
 
-### Code Splitting
+```bash
+docker build ./reactjs -t car-logbook-frontend \
+  --build-arg REACT_APP_API_URL=http://localhost:5000
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+* Stage 1 builds the CRA bundle; stage 2 serves it via nginx.
+* `nginx.conf.template` is rendered by the nginx entrypoint (`envsubst`) on
+  container start, so these are **runtime** env vars:
+  * `BACKEND_UPSTREAM` — proxy target, default `http://backend-node:5000`.
+  * `NGINX_RESOLVER` — DNS for the proxy, default `127.0.0.11` (Docker).
+* The `/api/` proxy and `/health` pass-through are only used when the app was
+  built with `REACT_APP_API_URL=/api` (single-origin mode); the default
+  direct mode bypasses them.
+* SPA fallback (`try_files … /index.html`) keeps deep links working on
+  refresh; `index.html` is served `no-store`.
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+`docker compose up --build` at the repo root wires this up with the backend —
+see [docs/deploy.md](../docs/deploy.md).
