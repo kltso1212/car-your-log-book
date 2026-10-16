@@ -7,6 +7,12 @@ export interface CompressedImage {
   height: number;
 }
 
+// Mirrors the backends' accepted upload types (jpeg/png/webp).
+export const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp';
+
+export const isAcceptedImage = (file: File): boolean =>
+  IMAGE_ACCEPT.split(',').includes(file.type);
+
 export interface CropArea {
   x: number;
   y: number;

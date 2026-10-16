@@ -929,6 +929,12 @@ h1 .icon-button {
   border-radius: 6px;
   background-color: var(--bg-light);
   text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.receipt-field.drag-over {
+  border-color: var(--accent-blue);
+  background-color: var(--bg-card);
 }
 
 .receipt-thumb {
