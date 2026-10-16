@@ -20,10 +20,13 @@ public class ParkingRecordService {
 
     private final VehicleRepository vehicles;
     private final ParkingRecordRepository parkingRecords;
+    private final ImageStorageService imageStorage;
 
-    public ParkingRecordService(VehicleRepository vehicles, ParkingRecordRepository parkingRecords) {
+    public ParkingRecordService(VehicleRepository vehicles, ParkingRecordRepository parkingRecords,
+            ImageStorageService imageStorage) {
         this.vehicles = vehicles;
         this.parkingRecords = parkingRecords;
+        this.imageStorage = imageStorage;
     }
 
     @Transactional(readOnly = true)
@@ -48,6 +51,7 @@ public class ParkingRecordService {
 
     @Transactional
     public boolean deleteById(Integer vehicleId, long id) {
+        imageStorage.deleteImagesFor("parking_record", id);
         var existing = parkingRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         parkingRecords.delete(existing.get());

@@ -6,6 +6,7 @@ import type { Vehicle } from './types/Vehicle';
 import { PageContext } from './contexts/PageContext';
 import { VehicleContext } from './contexts/VehicleContext';
 import VehicleSelect from './components/VehicleSelect';
+import VehicleIdentityBar from './components/VehicleIdentityBar';
 import NavigationBar from './components/NavigationBar';
 import HomePage from './pages/HomePage';
 import VehicleRoutePage from './pages/VehicleRoutePage';
@@ -40,9 +41,10 @@ function AppShell() {
   return (
     <VehicleContext.Provider value={{ vehicles, setVehicles, currentVehicle, setCurrentVehicle }}>
       <PageContext.Provider value={{ currentPage, setCurrentPage }}>
-        {/* Vehicle picker first; navbar only appears once a vehicle is
-            selected, below the picker */}
+        {/* Vehicle picker first; identity strip + navbar only appear once a
+            vehicle is selected, below the picker */}
         {loading ? <h2>正在載入...</h2> : (loadSuccess ? <VehicleSelect /> : <h2>載入失敗!</h2>)}
+        {!loading && loadSuccess && currentVehicle && <VehicleIdentityBar />}
         {!loading && loadSuccess && currentVehicle && <NavigationBar />}
         {!loading && loadSuccess && (
           <Routes>

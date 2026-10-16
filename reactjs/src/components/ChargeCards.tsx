@@ -1,13 +1,17 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteChargeRecord, type ChargeRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ChargeRecordContext } from '../contexts/ChargeRecordContext';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for charge records (mirrors FuelRecordCards).
 export default function ChargeCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: ChargeRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -35,7 +39,9 @@ export default function ChargeCards({
       {chargeRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        chargeRecords.map((record, i) => (
+        chargeRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? record.odm));
+          return (
           <div className="card" key={record.id ?? record.odm}>
             <div className="card-info">
               <div className="card-title">{record.date} · {Number(record.odm)} km</div>
@@ -45,6 +51,7 @@ export default function ChargeCards({
               </div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date} ${record.odm} km`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -61,7 +68,8 @@ export default function ChargeCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

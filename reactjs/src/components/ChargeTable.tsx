@@ -1,11 +1,16 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteChargeRecord, type ChargeRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ChargeRecordContext } from '../contexts/ChargeRecordContext';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
-export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord) => void }) {
+export default function ChargeTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: ChargeRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { chargeRecords, setChargeRecords } = useContext(ChargeRecordContext);
 
@@ -38,7 +43,9 @@ export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord)
               </td>
             </tr>
           ) : (
-            chargeRecords.map((record, i) => (
+            chargeRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? record.odm));
+              return (
               <tr key={record.id ?? record.odm}>
                 <td>{record.date}</td>
                 <td>{Number(record.odm)} km</td>
@@ -46,6 +53,7 @@ export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord)
                 <td>$ {Number(record.price).toFixed(2)}</td>
                 <td>$ {Number(record.pricePerKwh ?? 0).toFixed(2)} / kWh</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date} ${record.odm} km`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -62,7 +70,8 @@ export default function ChargeTable({ onEdit }: { onEdit: (record: ChargeRecord)
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

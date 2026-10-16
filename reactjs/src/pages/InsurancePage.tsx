@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext, useMemo } from 'react';
-import { getInsuranceRecords, type InsuranceRecord } from '../services/api';
+import { useState, useEffect, useContext, useMemo, useCallback } from 'react';
+import { getInsuranceRecords, getImages, type InsuranceRecord, type ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { InsuranceRecordContext } from '../contexts/InsuranceRecordContext';
 import InsuranceTable from '../components/InsuranceTable';
@@ -13,11 +13,16 @@ import { vehiclePlateOf } from '../types/Vehicle';
 
 type DialogState = { mode: 'closed' } | { mode: 'insert' } | { mode: 'edit'; record: InsuranceRecord };
 
+const keyOf = (r: InsuranceRecord) => String(r.id ?? 0);
+
 export default function InsurancePage() {
   const { vehicles, currentVehicle } = useContext(VehicleContext);
   const [insuranceRecords, setInsuranceRecords] = useState<InsuranceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' });
+  const [images, setImages] = useState<Map<string, ImageInfo>>(new Map());
+  const [imagesTick, setImagesTick] = useState(0);
+  const refreshImages = useCallback(() => setImagesTick(t => t + 1), []);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -36,6 +41,22 @@ export default function InsurancePage() {
       })
       .finally(() => setLoading(false));
   }, [currentVehicle]);
+
+  useEffect(() => {
+    if (!currentVehicle || insuranceRecords.length === 0) {
+      setImages(new Map());
+      return;
+    }
+    getImages('insurance_record', insuranceRecords.map(r => keyOf(r)))
+      .then(res => {
+        const map = new Map<string, ImageInfo>();
+        for (const img of res.data) {
+          if (img.kind === 'receipt') map.set(String(img.entityId), img);
+        }
+        setImages(map);
+      })
+      .catch(() => setImages(new Map()));
+  }, [currentVehicle, insuranceRecords, imagesTick]);
 
   // Same expiry the 總覽 page shows (latest record + 1 year − 1 day),
   // displayed here like the 平均油耗 line on the fuel page.
@@ -62,16 +83,20 @@ export default function InsurancePage() {
           <h2>正在載入...</h2>
         ) : isMobile ? (
           <InsuranceCards
+            images={images}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         ) : (
           <InsuranceTable
+            images={images}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         )}
         {dialog.mode !== 'closed' && (
           <InsuranceDialog
             {...(dialog.mode === 'edit' ? { initial: dialog.record } : {})}
+            receiptImage={dialog.mode === 'edit' ? images.get(String(keyOf(dialog.record))) ?? null : null}
+            onImageChanged={refreshImages}
             onClose={() => setDialog({ mode: 'closed' })}
           />
         )}

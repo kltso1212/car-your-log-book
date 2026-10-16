@@ -20,8 +20,13 @@ namespace dotnet.Controllers
         [HttpPost("{id}")]
         public async Task<IActionResult> Post(int id, [FromBody] ChargeRecordDto req)
         {
-            var ok = await _chargeRecordService.AddAsync(id, req);
-            return ok ? Created() : NotFound(new { message = "找不到車輛" });
+            var newId = await _chargeRecordService.AddAsync(id, req);
+            return newId switch
+            {
+                > 0 => CreatedAtAction(nameof(Get), new { id }, new { message = "充電記錄已新增", id = newId }),
+                -1 => Conflict(new { message = "充電記錄已存在" }),
+                _ => NotFound(new { message = "找不到車輛" }),
+            };
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, [FromQuery] int odm)

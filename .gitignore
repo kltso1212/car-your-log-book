@@ -11,6 +11,9 @@ __pycache__/
 *.db-shm
 *.db-journal
 
+# Uploaded images (avatars/receipts), stored next to the SQLite file
+uploads/
+
 # Logs
 *.log
 

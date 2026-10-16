@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/servicerecords")
@@ -33,21 +34,20 @@ public class ServiceRecordsController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<FuelRecordDto.Message> post(
+    public ResponseEntity<Map<String, Object>> post(
             @PathVariable Integer id,
             @RequestBody ServiceRecordDto.Request req) {
-        boolean added = serviceRecordService.add(id, req);
-        if (!added) {
-            boolean exists = serviceRecordService.getByOdm(id, req.odm()).isPresent();
-            if (exists) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(new FuelRecordDto.Message("保養記錄已存在"));
-            }
+        long newId = serviceRecordService.add(id, req);
+        if (newId == -1L) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "保養記錄已存在"));
+        }
+        if (newId <= 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new FuelRecordDto.Message("找不到車輛"));
+                    .body(Map.of("message", "找不到車輛"));
         }
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new FuelRecordDto.Message("保養記錄已新增"));
+                .body(Map.of("message", "保養記錄已新增", "id", newId));
     }
 
     @DeleteMapping("/{id}")

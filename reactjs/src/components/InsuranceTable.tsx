@@ -1,12 +1,17 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteInsuranceRecord, type InsuranceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { InsuranceRecordContext } from '../contexts/InsuranceRecordContext';
 import { InsuranceTypeName } from '../types/DatedTypes';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
-export default function InsuranceTable({ onEdit }: { onEdit: (record: InsuranceRecord) => void }) {
+export default function InsuranceTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: InsuranceRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { insuranceRecords, setInsuranceRecords } = useContext(InsuranceRecordContext);
 
@@ -39,13 +44,16 @@ export default function InsuranceTable({ onEdit }: { onEdit: (record: InsuranceR
               </td>
             </tr>
           ) : (
-            insuranceRecords.map((record, i) => (
+            insuranceRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? 0));
+              return (
               <tr key={record.id ?? `${record.date}-${i}`}>
                 <td>{record.date}</td>
                 <td>{InsuranceTypeName(record.type)}</td>
                 <td>{record.broker ?? ''}</td>
                 <td>$ {Number(record.fee).toFixed(2)}</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date}保險記錄`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -62,7 +70,8 @@ export default function InsuranceTable({ onEdit }: { onEdit: (record: InsuranceR
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

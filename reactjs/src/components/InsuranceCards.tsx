@@ -1,14 +1,18 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteInsuranceRecord, type InsuranceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { InsuranceRecordContext } from '../contexts/InsuranceRecordContext';
 import { InsuranceTypeName } from '../types/DatedTypes';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for insurance (mirrors FuelRecordCards).
 export default function InsuranceCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: InsuranceRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -36,7 +40,9 @@ export default function InsuranceCards({
       {insuranceRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        insuranceRecords.map((record, i) => (
+        insuranceRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? 0));
+          return (
           <div className="card" key={record.id ?? `${record.date}-${i}`}>
             <div className="card-info">
               <div className="card-title">{record.date} · {InsuranceTypeName(record.type)}</div>
@@ -45,6 +51,7 @@ export default function InsuranceCards({
               </div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date}保險記錄`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -61,7 +68,8 @@ export default function InsuranceCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

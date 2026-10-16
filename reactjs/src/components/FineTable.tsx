@@ -1,10 +1,12 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteFineRecord, type FineRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FineRecordContext } from '../contexts/FineRecordContext';
 import { offenceName } from '../types/Offence';
 import { displayCustomList } from '../utils/customList';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
 const describe = (record: FineRecord): string => {
@@ -14,7 +16,10 @@ const describe = (record: FineRecord): string => {
   return names.join('、');
 };
 
-export default function FineTable({ onEdit }: { onEdit: (record: FineRecord) => void }) {
+export default function FineTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: FineRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { fineRecords, setFineRecords } = useContext(FineRecordContext);
 
@@ -47,13 +52,16 @@ export default function FineTable({ onEdit }: { onEdit: (record: FineRecord) => 
               </td>
             </tr>
           ) : (
-            fineRecords.map((record, i) => (
+            fineRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? 0));
+              return (
               <tr key={record.id ?? `${record.date}-${i}`}>
                 <td>{record.date}</td>
                 <td>{describe(record)}</td>
                 <td>{record.location ?? ''}</td>
                 <td>$ {Number(record.penalty).toFixed(2)}</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date}罰款記錄`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -70,7 +78,8 @@ export default function FineTable({ onEdit }: { onEdit: (record: FineRecord) => 
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

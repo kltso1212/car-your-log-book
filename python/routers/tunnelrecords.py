@@ -6,6 +6,7 @@ surrogate id instead of ?odm=.
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import Message, TunnelRecordIn, TunnelRecordOut
 
 router = APIRouter(prefix="/api/tunnelrecords", tags=["tunnelrecords"])
@@ -36,6 +37,7 @@ def add_record(vehicle_id: int, body: TunnelRecordIn):
 
 @router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: int, record_id: int):
+    images.delete_images_for("tunnel_record", record_id)
     db.execute("DELETE FROM tunnel_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

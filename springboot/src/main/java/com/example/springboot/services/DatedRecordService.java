@@ -24,13 +24,16 @@ public class DatedRecordService {
     private final VehicleRepository vehicles;
     private final InsuranceRecordRepository insuranceRecords;
     private final LicenceRecordRepository licenceRecords;
+    private final ImageStorageService imageStorage;
 
     public DatedRecordService(VehicleRepository vehicles,
                               InsuranceRecordRepository insuranceRecords,
-                              LicenceRecordRepository licenceRecords) {
+                              LicenceRecordRepository licenceRecords,
+                              ImageStorageService imageStorage) {
         this.vehicles = vehicles;
         this.insuranceRecords = insuranceRecords;
         this.licenceRecords = licenceRecords;
+        this.imageStorage = imageStorage;
     }
 
     // ---- insurance ----
@@ -66,6 +69,7 @@ public class DatedRecordService {
 
     @Transactional
     public boolean deleteInsurance(Integer vehicleId, long id) {
+        imageStorage.deleteImagesFor("insurance_record", id);
         var existing = insuranceRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         insuranceRecords.delete(existing.get());
@@ -122,6 +126,7 @@ public class DatedRecordService {
 
     @Transactional
     public boolean deleteLicence(Integer vehicleId, long id) {
+        imageStorage.deleteImagesFor("licence_record", id);
         var existing = licenceRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         licenceRecords.delete(existing.get());

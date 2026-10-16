@@ -1,12 +1,17 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteLicenceRecord, type LicenceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { LicenceRecordContext } from '../contexts/LicenceRecordContext';
 import { LicenceTypeName } from '../types/DatedTypes';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
-export default function LicenceTable({ onEdit }: { onEdit: (record: LicenceRecord) => void }) {
+export default function LicenceTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: LicenceRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { licenceRecords, setLicenceRecords } = useContext(LicenceRecordContext);
 
@@ -39,12 +44,15 @@ export default function LicenceTable({ onEdit }: { onEdit: (record: LicenceRecor
               </td>
             </tr>
           ) : (
-            licenceRecords.map((record, i) => (
+            licenceRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? 0));
+              return (
               <tr key={record.id ?? `${record.date}-${i}`}>
                 <td>{record.date}</td>
                 <td>{LicenceTypeName(record.type)}</td>
                 <td>$ {Number(record.fee).toFixed(2)}</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date}牌費記錄`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -61,7 +69,8 @@ export default function LicenceTable({ onEdit }: { onEdit: (record: LicenceRecor
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

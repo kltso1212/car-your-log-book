@@ -1,15 +1,19 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteFineRecord, type FineRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FineRecordContext } from '../contexts/FineRecordContext';
 import { offenceName } from '../types/Offence';
 import { displayCustomList } from '../utils/customList';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for fines (mirrors FuelRecordCards).
 export default function FineCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: FineRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -44,7 +48,9 @@ export default function FineCards({
       {fineRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        fineRecords.map((record, i) => (
+        fineRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? 0));
+          return (
           <div className="card" key={record.id ?? `${record.date}-${i}`}>
             <div className="card-info">
               <div className="card-title">{record.date} · $ {Number(record.penalty).toFixed(2)}</div>
@@ -52,6 +58,7 @@ export default function FineCards({
               {!!record.location && <div>{record.location}</div>}
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date}罰款記錄`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -68,7 +75,8 @@ export default function FineCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

@@ -60,6 +60,7 @@ namespace dotnet.Services
             var vehicle = await Task.Run(() => GetById(id));
             if (vehicle is null) return false;
 
+            ImageStorage.DeleteVehicleImages(_context, id); // before cascade drops the records
             _context.Vehicles.Remove(vehicle);
             await _context.SaveChangesAsync();
             return true;

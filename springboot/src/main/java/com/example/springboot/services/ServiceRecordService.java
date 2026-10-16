@@ -21,10 +21,13 @@ public class ServiceRecordService {
 
     private final VehicleRepository vehicles;
     private final ServiceRecordRepository serviceRecords;
+    private final ImageStorageService imageStorage;
 
-    public ServiceRecordService(VehicleRepository vehicles, ServiceRecordRepository serviceRecords) {
+    public ServiceRecordService(VehicleRepository vehicles, ServiceRecordRepository serviceRecords,
+            ImageStorageService imageStorage) {
         this.vehicles = vehicles;
         this.serviceRecords = serviceRecords;
+        this.imageStorage = imageStorage;
     }
 
     @Transactional(readOnly = true)
@@ -40,10 +43,10 @@ public class ServiceRecordService {
     }
 
     @Transactional
-    public boolean add(Integer vehicleId, ServiceRecordDto.Request req) {
-        if (req == null) return false;
-        if (!vehicles.existsById(vehicleId)) return false;
-        if (serviceRecords.existsByVehicleIdAndOdm(vehicleId, req.odm())) return false;
+    public Long add(Integer vehicleId, ServiceRecordDto.Request req) {
+        if (req == null) return 0L;
+        if (!vehicles.existsById(vehicleId)) return 0L;
+        if (serviceRecords.existsByVehicleIdAndOdm(vehicleId, req.odm())) return -1L;
         ServiceRecord r = new ServiceRecord();
         r.setVehicleId(vehicleId);
         r.setDate(req.date());
@@ -51,14 +54,14 @@ public class ServiceRecordService {
         r.setItemIds(req.items());
         r.setCustomItem(req.customItem());
         r.setPrice(req.price());
-        serviceRecords.save(r);
-        return true;
+        return serviceRecords.save(r).getId();
     }
 
     @Transactional
     public boolean deleteByOdm(Integer vehicleId, int odm) {
         var existing = serviceRecords.findByVehicleIdAndOdm(vehicleId, odm);
         if (existing.isEmpty()) return false;
+        imageStorage.deleteImagesFor("service_record", existing.get().getId());
         serviceRecords.delete(existing.get());
         return true;
     }

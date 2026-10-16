@@ -1,12 +1,15 @@
 import { useContext, useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { addFuelRecord, recordKey, updateFuelRecord } from '../services/api';
+import { addFuelRecord, deleteImage, recordKey, updateFuelRecord, uploadImage } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FuelRecordContext } from '../contexts/FuelRecordContext';
 import { vendors } from '../types/Vendor';
 import { DIESEL_FUEL_TYPE, fuelTypes } from '../types/FuelType';
 import { DIESEL_TYPE, vehicleTypeOf } from '../types/Vehicle';
 import { compareFuelByDateDesc } from '../utils/fuelSort';
+import ReceiptField from './ReceiptField';
+import type { CompressedImage } from '../utils/image';
 import type { FuelRecord } from '../types';
 
 // Diesel vehicles lock to fuel type 2 (柴油); all others use the rest.
@@ -17,9 +20,13 @@ const allowedFuelTypes = (t: number | undefined): number[] =>
 // Opened from the page-level button for both add and edit.
 export default function FuelRecordDialog({
   initial,
+  receiptImage,
+  onImageChanged,
   onClose,
 }: {
   initial?: FuelRecord;
+  receiptImage?: ImageInfo | null;
+  onImageChanged?: () => void;
   onClose: () => void;
 }) {
   const isEdit = initial !== undefined;
@@ -31,6 +38,8 @@ export default function FuelRecordDialog({
   const [fuelType, setFuelType] = useState(0);
   const [litre, setLitre] = useState('');
   const [price, setPrice] = useState('');
+  const [pendingReceipt, setPendingReceipt] = useState<CompressedImage | null>(null);
+  const [pendingReceiptDelete, setPendingReceiptDelete] = useState(false);
 
   const allowed = allowedFuelTypes(vehicleTypeOf(vehicles, currentVehicle));
 
@@ -41,6 +50,8 @@ export default function FuelRecordDialog({
     setFuelType(allowed.includes(initial?.fuelType ?? -1) ? initial!.fuelType : allowed[0]!);
     setLitre(initial ? String(initial.litre) : '');
     setPrice(initial ? String(initial.price) : '');
+    setPendingReceipt(null);
+    setPendingReceiptDelete(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial]);
 
@@ -53,6 +64,18 @@ export default function FuelRecordDialog({
     (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
       setter(e.target.value);
     };
+
+  const applyReceipt = async (entityId: number): Promise<void> => {
+    if (pendingReceiptDelete) {
+      if (receiptImage) await deleteImage(receiptImage.id);
+    } else if (pendingReceipt) {
+      await uploadImage(pendingReceipt, {
+        entityType: 'fuel_record',
+        entityId,
+        kind: 'receipt',
+      });
+    }
+  };
 
   const handleSave = (e: FormEvent): void => {
     e.preventDefault();
@@ -81,11 +104,30 @@ export default function FuelRecordDialog({
     if (currentVehicle === '') return alert('請選擇座駕');
     if (isEdit) {
       updateFuelRecord(currentVehicle, rec)
-        .then(() => done({ ...rec, pricePerLitre: unitPrice }))
+        .then(async () => {
+          try {
+            await applyReceipt(Number(recordKey(initial!)));
+          } catch {
+            alert('記錄已儲存，但收據未能更新，請再編輯記錄重試');
+          }
+          onImageChanged?.();
+          done({ ...rec, pricePerLitre: unitPrice });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     } else {
       addFuelRecord(currentVehicle, rec)
-        .then(() => done({ ...rec, pricePerLitre: unitPrice }))
+        .then(async res => {
+          const newId = res.data?.id;
+          if ((pendingReceipt || pendingReceiptDelete) && newId != null) {
+            try {
+              await applyReceipt(Number(newId));
+            } catch {
+              alert('記錄已儲存，但收據上載失敗，請編輯記錄重試');
+            }
+          }
+          onImageChanged?.();
+          done({ ...rec, ...(newId != null ? { id: Number(newId) } : {}), pricePerLitre: unitPrice });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     }
   };
@@ -127,6 +169,23 @@ export default function FuelRecordDialog({
               <input type="number" min="0" step="any" value={price} onChange={handleChange(setPrice)} required />
             </label>
             <span className="unit-box">$ {unitPrice.toFixed(2)} / L</span>
+          </div>
+          <div className="form-row">
+            <label>收據圖片
+              <ReceiptField
+                image={receiptImage}
+                pending={pendingReceipt}
+                pendingDelete={pendingReceiptDelete}
+                onPick={compressed => {
+                  setPendingReceipt(compressed);
+                  setPendingReceiptDelete(false);
+                }}
+                onRemove={() => {
+                  if (pendingReceipt) setPendingReceipt(null);
+                  else setPendingReceiptDelete(true);
+                }}
+              />
+            </label>
           </div>
           <div className="dialog-actions">
             <button type="button" onClick={onClose}>取消</button>

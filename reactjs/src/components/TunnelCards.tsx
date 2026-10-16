@@ -1,14 +1,18 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteTunnelRecord, type TunnelRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { TunnelRecordContext } from '../contexts/TunnelRecordContext';
 import { TunnelBoundName, TunnelName } from '../types/Tunnel';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for tunnel trips (mirrors FuelRecordCards).
 export default function TunnelCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: TunnelRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -36,7 +40,9 @@ export default function TunnelCards({
       {tunnelRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        tunnelRecords.map((record, i) => (
+        tunnelRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? 0));
+          return (
           <div className="card" key={record.id ?? `${record.date}-${record.tunnel}-${i}`}>
             <div className="card-info">
               <div className="card-title">{record.date} · {TunnelName(record.tunnel)}</div>
@@ -45,6 +51,7 @@ export default function TunnelCards({
               </div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date} ${TunnelName(record.tunnel)}`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -61,7 +68,8 @@ export default function TunnelCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

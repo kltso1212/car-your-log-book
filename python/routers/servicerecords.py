@@ -8,6 +8,7 @@ import sqlite3
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import Message, ServiceRecordIn, ServiceRecordOut
 
 router = APIRouter(prefix="/api/servicerecords", tags=["servicerecords"])
@@ -39,10 +40,10 @@ def list_records(vehicle_id: int):
     return _decode(db.rows(_LIST_SQL, (vehicle_id,)))
 
 
-@router.post("/{vehicle_id}", response_model=Message, status_code=status.HTTP_201_CREATED)
+@router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
 def add_record(vehicle_id: int, body: ServiceRecordIn):
     try:
-        db.execute(
+        new_id = db.insert(
             """INSERT INTO service_records
             (vehicle_id, date, odm, items, custom_item, price)
             VALUES (?, ?, ?, ?, ?, ?)""",
@@ -57,11 +58,13 @@ def add_record(vehicle_id: int, body: ServiceRecordIn):
             status_code=status.HTTP_409_CONFLICT,
             media_type="application/json",
         )
-    return Message(message="保養記錄已新增")
+    return {"message": "保養記錄已新增", "id": new_id}
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: int, odm: int):
+    for rec in db.rows("SELECT id FROM service_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm)):
+        images.delete_images_for("service_record", rec["id"])
     db.execute("DELETE FROM service_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

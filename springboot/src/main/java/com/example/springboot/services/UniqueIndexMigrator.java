@@ -19,6 +19,7 @@ public class UniqueIndexMigrator implements CommandLineRunner {
         "CREATE UNIQUE INDEX IF NOT EXISTS service_records_vehicle_odm_key ON service_records (vehicle_id, odm)",
         "CREATE UNIQUE INDEX IF NOT EXISTS insurance_records_vehicle_date_key ON insurance_records (vehicle_id, date)",
         "CREATE UNIQUE INDEX IF NOT EXISTS licence_records_vehicle_date_key ON licence_records (vehicle_id, date)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS images_entity_type_entity_id_kind_key ON images (entity_type, entity_id, kind)",
     };
 
     private final JdbcTemplate jdbc;

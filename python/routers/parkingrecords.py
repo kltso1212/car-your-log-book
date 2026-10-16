@@ -4,6 +4,7 @@
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import Message, ParkingRecordIn, ParkingRecordOut
 
 router = APIRouter(prefix="/api/parkingrecords", tags=["parkingrecords"])
@@ -34,6 +35,7 @@ def add_record(vehicle_id: int, body: ParkingRecordIn):
 
 @router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: int, record_id: int):
+    images.delete_images_for("parking_record", record_id)
     db.execute("DELETE FROM parking_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

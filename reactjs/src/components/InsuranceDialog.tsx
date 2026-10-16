@@ -1,17 +1,24 @@
 import { useContext, useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { addInsuranceRecord, updateInsuranceRecord, type InsuranceRecord } from '../services/api';
+import { addInsuranceRecord, deleteImage, updateInsuranceRecord, uploadImage, type InsuranceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { InsuranceRecordContext } from '../contexts/InsuranceRecordContext';
 import { insuranceTypes } from '../types/DatedTypes';
 import { compareInsuranceByDateDesc } from '../utils/insuranceSort';
+import ReceiptField from './ReceiptField';
+import type { CompressedImage } from '../utils/image';
 
 // Shared insert/edit dialog (type 1 第三者 / 2 綜合 + optional broker).
 export default function InsuranceDialog({
   initial,
+  receiptImage,
+  onImageChanged,
   onClose,
 }: {
   initial?: InsuranceRecord;
+  receiptImage?: ImageInfo | null;
+  onImageChanged?: () => void;
   onClose: () => void;
 }) {
   const isEdit = initial !== undefined;
@@ -21,12 +28,16 @@ export default function InsuranceDialog({
   const [type, setType] = useState(1);
   const [broker, setBroker] = useState('');
   const [fee, setFee] = useState('');
+  const [pendingReceipt, setPendingReceipt] = useState<CompressedImage | null>(null);
+  const [pendingReceiptDelete, setPendingReceiptDelete] = useState(false);
 
   useEffect(() => {
     setDate(initial?.date ?? '');
     setType(initial?.type ?? 1);
     setBroker(initial?.broker ?? '');
     setFee(initial ? String(initial.fee) : '');
+    setPendingReceipt(null);
+    setPendingReceiptDelete(false);
   }, [initial]);
 
   const handleChange =
@@ -34,6 +45,18 @@ export default function InsuranceDialog({
     (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
       setter(e.target.value);
     };
+
+  const applyReceipt = async (entityId: number): Promise<void> => {
+    if (pendingReceiptDelete) {
+      if (receiptImage) await deleteImage(receiptImage.id);
+    } else if (pendingReceipt) {
+      await uploadImage(pendingReceipt, {
+        entityType: 'insurance_record',
+        entityId,
+        kind: 'receipt',
+      });
+    }
+  };
 
   const handleSave = (e: FormEvent): void => {
     e.preventDefault();
@@ -61,11 +84,30 @@ export default function InsuranceDialog({
       const id = initial!.id;
       if (id === undefined) return alert('找不到記錄!');
       updateInsuranceRecord(currentVehicle, { ...rec, id })
-        .then(() => done({ ...rec, id }))
+        .then(async () => {
+          try {
+            await applyReceipt(Number(id));
+          } catch {
+            alert('記錄已儲存，但收據未能更新，請再編輯記錄重試');
+          }
+          onImageChanged?.();
+          done({ ...rec, id });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     } else {
       addInsuranceRecord(currentVehicle, rec)
-        .then(res => done({ ...rec, id: res.data?.id }))
+        .then(async res => {
+          const newId = res.data?.id;
+          if ((pendingReceipt || pendingReceiptDelete) && newId != null) {
+            try {
+              await applyReceipt(Number(newId));
+            } catch {
+              alert('記錄已儲存，但收據上載失敗，請編輯記錄重試');
+            }
+          }
+          onImageChanged?.();
+          done({ ...rec, id: res.data?.id });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     }
   };
@@ -93,6 +135,23 @@ export default function InsuranceDialog({
             </label>
             <label>保費 ($)
               <input type="number" min="0" step="any" value={fee} onChange={handleChange(setFee)} />
+            </label>
+          </div>
+          <div className="form-row">
+            <label>收據圖片
+              <ReceiptField
+                image={receiptImage}
+                pending={pendingReceipt}
+                pendingDelete={pendingReceiptDelete}
+                onPick={compressed => {
+                  setPendingReceipt(compressed);
+                  setPendingReceiptDelete(false);
+                }}
+                onRemove={() => {
+                  if (pendingReceipt) setPendingReceipt(null);
+                  else setPendingReceiptDelete(true);
+                }}
+              />
             </label>
           </div>
           <div className="dialog-actions">

@@ -1,12 +1,17 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteTunnelRecord, type TunnelRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { TunnelRecordContext } from '../contexts/TunnelRecordContext';
 import { TunnelBoundName, TunnelName } from '../types/Tunnel';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
-export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord) => void }) {
+export default function TunnelTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: TunnelRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { tunnelRecords, setTunnelRecords } = useContext(TunnelRecordContext);
 
@@ -39,13 +44,16 @@ export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord)
               </td>
             </tr>
           ) : (
-            tunnelRecords.map((record, i) => (
+            tunnelRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? 0));
+              return (
               <tr key={record.id ?? `${record.date}-${record.tunnel}-${i}`}>
                 <td>{record.date}</td>
                 <td>{TunnelName(record.tunnel)}</td>
                 <td>{TunnelBoundName(record.tunnel, record.bound)}</td>
                 <td>$ {Number(record.fee).toFixed(2)}</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date} ${TunnelName(record.tunnel)}`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -62,7 +70,8 @@ export default function TunnelTable({ onEdit }: { onEdit: (record: TunnelRecord)
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

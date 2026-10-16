@@ -1,16 +1,20 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
-import { deleteFuelRecord } from '../services/api';
+import { deleteFuelRecord, recordKey } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { FuelType } from '../types/FuelType';
 import { Vendor } from '../types/Vendor';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FuelRecordContext } from '../contexts/FuelRecordContext';
+import ReceiptLink from './ReceiptLink';
 import type { FuelRecord } from '../types';
 
 // Mobile card list: used below the 768px breakpoint instead of FuelRecordTable.
 export default function FuelRecordCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: FuelRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -38,7 +42,9 @@ export default function FuelRecordCards({
       {fuelRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        fuelRecords.map((record, i) => (
+        fuelRecords.map((record, i) => {
+          const receipt = images.get(String(recordKey(record)));
+          return (
           <div className="card" key={record.id ?? (record as { Id?: string | number }).Id ?? record.odm}>
             <div className="card-info">
               <div className="card-title">{record.date} · {Number(record.odm)} km</div>
@@ -49,6 +55,7 @@ export default function FuelRecordCards({
               </div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date} ${record.odm} km`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -65,7 +72,8 @@ export default function FuelRecordCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

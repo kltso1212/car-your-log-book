@@ -1,7 +1,23 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('./db');
+const {
+    ENTITY_TABLES,
+    TABLE_ENTITIES,
+    KINDS,
+    ALLOWED_MIME,
+    MAX_IMAGE_BYTES,
+    entityExists,
+    filePathOf,
+    saveImageFile,
+    removeImageFile,
+    imageJson,
+    deleteImagesFor,
+    deleteVehicleImages,
+} = require('./images');
 
 const app = express();
 // CORS_ORIGIN=* (or empty) = allow all origins: zero-config for localhost,
@@ -17,6 +33,132 @@ app.use(express.json());
 
 // Liveness probe for Docker / Cloud Run / Render / Railway health checks.
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Images: files on disk under UPLOAD_DIR (default: next to sqlite.db),
+// db rows in `images` keyed by (entity_type, entity_id, kind) — 1 avatar per
+// vehicle, 1 receipt per record. `source` (optional upload field) keeps the
+// uncropped avatar so it can be re-cropped later (stored as <kind>_source).
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: MAX_IMAGE_BYTES, files: 2 },
+});
+const runUpload = (req, res) => new Promise((resolve, reject) => {
+    upload.any()(req, res, (err) => (err ? reject(err) : resolve()));
+});
+const intOrNull = (v) => {
+    const n = Number(v);
+    return Number.isInteger(n) && n > 0 ? n : null;
+};
+
+app.post('/api/images', async (req, res) => {
+    const entityType = String(req.query.entityType ?? '');
+    const entityId = Number(req.query.entityId);
+    const kind = String(req.query.kind ?? '');
+    if (!ENTITY_TABLES[entityType]) return res.status(400).json({ message: '圖片類型無效' });
+    if (!Number.isInteger(entityId) || entityId <= 0) return res.status(400).json({ message: '圖片對象無效' });
+    if (!KINDS.includes(kind)) return res.status(400).json({ message: '圖片用途無效' });
+    if (!(await entityExists(entityType, entityId))) {
+        return res.status(404).json({ message: entityType === 'vehicle' ? '找不到車輛' : '找不到記錄' });
+    }
+    try {
+        await runUpload(req, res);
+    } catch (err) {
+        if (err && err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: '圖片太大 (最大 10MB)' });
+        }
+        return res.status(400).json({ message: '上載失敗' });
+    }
+    const files = req.files ?? [];
+    const main = files.find(f => f.fieldname === 'file');
+    const source = files.find(f => f.fieldname === 'source');
+    if (!main) return res.status(400).json({ message: '缺少圖片' });
+    for (const f of [main, source].filter(Boolean)) {
+        if (!ALLOWED_MIME[f.mimetype]) return res.status(400).json({ message: '圖片格式無效' });
+    }
+    const replace = async (k) => {
+        const { rows } = await db.query(
+            `SELECT id, file_name FROM images
+            WHERE entity_type=$1 AND entity_id=$2 AND kind=$3`, [entityType, entityId, k]);
+        for (const row of rows) {
+            removeImageFile(entityType, entityId, row.file_name);
+            await db.query(`DELETE FROM images WHERE id=$1`, [row.id]);
+        }
+    };
+    try {
+        await replace(kind);
+        const fileName = saveImageFile(main.buffer, entityType, entityId, main.mimetype);
+        const { rows } = await db.query(
+            `INSERT INTO images (entity_type, entity_id, kind, file_name, mime, width, height, size_bytes, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING *`,
+            [entityType, entityId, kind, fileName, main.mimetype,
+                intOrNull(req.body.width), intOrNull(req.body.height),
+                main.size, new Date().toISOString()]);
+        const image = imageJson(rows[0]);
+        let sourceImage = null;
+        if (source) {
+            await replace(`${kind}_source`);
+            const sourceName = saveImageFile(source.buffer, entityType, entityId, source.mimetype);
+            const inserted = await db.query(
+                `INSERT INTO images (entity_type, entity_id, kind, file_name, mime, width, height, size_bytes, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                RETURNING *`,
+                [entityType, entityId, `${kind}_source`, sourceName, source.mimetype,
+                    intOrNull(req.body.sourceWidth), intOrNull(req.body.sourceHeight),
+                    source.size, new Date().toISOString()]);
+            sourceImage = imageJson(inserted.rows[0]);
+        }
+        res.status(201).json({ message: '圖片已上載', image, source: sourceImage });
+    } catch (err) {
+        console.error('image upload failed:', err);
+        res.status(500).json({ message: '圖片上載失敗' });
+    }
+});
+
+app.get('/api/images', async (req, res) => {
+    const entityType = String(req.query.entityType ?? '');
+    if (!ENTITY_TABLES[entityType]) return res.status(400).json({ message: '圖片類型無效' });
+    const ids = String(req.query.entityId ?? '').split(',')
+        .map(s => Number(s.trim()))
+        .filter(n => Number.isInteger(n) && n > 0);
+    if (ids.length === 0) return res.status(400).json({ message: '圖片對象無效' });
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+    const { rows } = await db.query(
+        `SELECT * FROM images
+        WHERE entity_type=$1 AND entity_id IN (${placeholders})
+        ORDER BY id`, [entityType, ...ids]);
+    res.json(rows.map(imageJson));
+});
+
+app.get('/api/images/:id/file', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(404).json({ message: '找不到圖片' });
+    const { rows } = await db.query(`SELECT * FROM images WHERE id=$1`, [id]);
+    if (rows.length === 0) return res.status(404).json({ message: '找不到圖片' });
+    const row = rows[0];
+    const file = filePathOf(row.entity_type, row.entity_id, row.file_name);
+    if (!fs.existsSync(file)) return res.status(404).json({ message: '找不到圖片' });
+    const etag = `"img-${row.id}"`;
+    res.set({
+        'Content-Type': row.mime,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'ETag': etag,
+    });
+    if (req.headers['if-none-match'] === etag) return res.status(304).end();
+    res.sendFile(file);
+});
+
+app.delete('/api/images/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(404).json({ message: '找不到圖片' });
+    const { rows } = await db.query(`SELECT * FROM images WHERE id=$1`, [id]);
+    if (rows.length === 0) return res.status(404).json({ message: '找不到圖片' });
+    const row = rows[0];
+    removeImageFile(row.entity_type, row.entity_id, row.file_name);
+    await db.query(`DELETE FROM images WHERE id=$1`, [id]);
+    res.status(204).json({ message: '圖片已刪除' });
+});
+
 
 // Vehicle: id INTEGER PK (surrogate), plate TEXT (non-unique, upper-cased),
 // type 1 petrol / 2 hybrid / 3 electric / 4 diesel (changeable via PUT),
@@ -109,10 +251,11 @@ app.put('/api/vehicles/:id', async (req, res) => {
 app.delete('/api/vehicles/:id', async (req, res) => {
     const id = Number(req.params.id);
     if (!Number.isInteger(id)) return res.status(404).json({ message: '找不到車輛' });
+    await deleteVehicleImages(id); // before cascade drops the records
     await db.query(
         `DELETE FROM vehicles
         WHERE id=$1`, [id]);
-    res.status(204).json({ message: '車輛已刪除' });
+    res.status(204).json({ message: '車輛已被刪除' });
 });
 
 app.get('/api/fuelrecords/:id', async (req, res) => {
@@ -129,17 +272,27 @@ app.get('/api/fuelrecords/:id', async (req, res) => {
 app.post('/api/fuelrecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, odm, vendor, fuelType, litre, price } = req.body;
-    await db.query(
-        `INSERT INTO fuel_records
-        (vehicle_id, date, odm, vendor, fuel_type, litre, price)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [id, date, odm, vendor, fuelType, litre, price]);
-    res.status(201).json({ message: '入油記錄已新增' });
+    try {
+        const result = await db.query(
+            `INSERT INTO fuel_records
+            (vehicle_id, date, odm, vendor, fuel_type, litre, price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING id`,
+            [id, date, odm, vendor, fuelType, litre, price]);
+        res.status(201).json({ message: '入油記錄已新增', id: result.rows[0]?.id ?? null });
+    } catch (err) {
+        if (err.code === '23505') return res.status(409).json({ message: '入油記錄已存在' });
+        return res.status(500).end();
+    }
 });
 
 app.delete('/api/fuelrecords/:id', async (req, res) => {
     const { id } = req.params;
     const { odm } = req.query;
+    const { rows: recs } = await db.query(
+        `SELECT id FROM fuel_records
+        WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
+    for (const rec of recs) await deleteImagesFor('fuel_record', rec.id);
     await db.query(
         `DELETE FROM fuel_records 
         WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
@@ -199,6 +352,7 @@ app.post('/api/finerecords/:id', async (req, res) => {
 
 app.delete('/api/finerecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
+    await deleteImagesFor('fine_record', Number(recordId));
     await db.query(
         `DELETE FROM fine_records
         WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -234,12 +388,13 @@ app.post('/api/servicerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, odm, items, customItem, price } = req.body;
     try {
-        await db.query(
+        const result = await db.query(
             `INSERT INTO service_records
             (vehicle_id, date, odm, items, custom_item, price)
-            VALUES ($1, $2, $3, $4, $5, $6)`,
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id`,
             [id, date, odm, JSON.stringify(items ?? []), customItem ?? null, price]);
-        res.status(201).json({ message: '保養記錄已新增' });
+        res.status(201).json({ message: '保養記錄已新增', id: result.rows[0]?.id ?? null });
     } catch (err) {
         if (err.code === '23505') return res.status(409).json({ message: '保養記錄已存在' });
         return res.status(500).end();
@@ -249,6 +404,10 @@ app.post('/api/servicerecords/:id', async (req, res) => {
 app.delete('/api/servicerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { odm } = req.query;
+    const { rows: recs } = await db.query(
+        `SELECT id FROM service_records
+        WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
+    for (const rec of recs) await deleteImagesFor('service_record', rec.id);
     await db.query(
         `DELETE FROM service_records
         WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
@@ -298,6 +457,7 @@ app.post('/api/parkingrecords/:id', async (req, res) => {
 
 app.delete('/api/parkingrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
+    await deleteImagesFor('parking_record', Number(recordId));
     await db.query(
         `DELETE FROM parking_records
         WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -333,12 +493,13 @@ app.post('/api/chargerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { date, odm, kwh, price } = req.body;
     try {
-        await db.query(
+        const result = await db.query(
             `INSERT INTO charge_records
             (vehicle_id, date, odm, kwh, price)
-            VALUES ($1, $2, $3, $4, $5)`,
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id`,
             [id, date, odm, kwh, price]);
-        res.status(201).json({ message: '充電記錄已新增' });
+        res.status(201).json({ message: '充電記錄已新增', id: result.rows[0]?.id ?? null });
     } catch (err) {
         if (err.code === '23505') return res.status(409).json({ message: '充電記錄已存在' });
         return res.status(500).end();
@@ -348,6 +509,10 @@ app.post('/api/chargerecords/:id', async (req, res) => {
 app.delete('/api/chargerecords/:id', async (req, res) => {
     const { id } = req.params;
     const { odm } = req.query;
+    const { rows: recs } = await db.query(
+        `SELECT id FROM charge_records
+        WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
+    for (const rec of recs) await deleteImagesFor('charge_record', rec.id);
     await db.query(
         `DELETE FROM charge_records
         WHERE vehicle_id=$1 AND odm=$2`, [id, odm]);
@@ -398,6 +563,7 @@ app.post('/api/tunnelrecords/:id', async (req, res) => {
 
 app.delete('/api/tunnelrecords/:vehicleId/:recordId', async (req, res) => {
     const { vehicleId, recordId } = req.params;
+    await deleteImagesFor('tunnel_record', Number(recordId));
     await db.query(
         `DELETE FROM tunnel_records
         WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);
@@ -447,6 +613,7 @@ const datedRecordRoutes = (name, table, addedMsg, updatedMsg, notFoundMsg, colum
     });
     app.delete(`/api/${name}/:vehicleId/:recordId`, async (req, res) => {
         const { vehicleId, recordId } = req.params;
+        await deleteImagesFor(TABLE_ENTITIES[table], Number(recordId));
         await db.query(
             `DELETE FROM ${table}
             WHERE id=$1 AND vehicle_id=$2`, [recordId, vehicleId]);

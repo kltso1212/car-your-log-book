@@ -1,16 +1,23 @@
 import { useContext, useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { addChargeRecord, updateChargeRecord, type ChargeRecord } from '../services/api';
+import { addChargeRecord, deleteImage, updateChargeRecord, uploadImage, type ChargeRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ChargeRecordContext } from '../contexts/ChargeRecordContext';
 import { compareChargeByDateDesc } from '../utils/chargeSort';
+import ReceiptField from './ReceiptField';
+import type { CompressedImage } from '../utils/image';
 
 // Shared insert/edit dialog for charge records (electric vehicles only).
 export default function ChargeDialog({
   initial,
+  receiptImage,
+  onImageChanged,
   onClose,
 }: {
   initial?: ChargeRecord;
+  receiptImage?: ImageInfo | null;
+  onImageChanged?: () => void;
   onClose: () => void;
 }) {
   const isEdit = initial !== undefined;
@@ -20,12 +27,16 @@ export default function ChargeDialog({
   const [odm, setOdm] = useState('');
   const [kwh, setKwh] = useState('');
   const [price, setPrice] = useState('');
+  const [pendingReceipt, setPendingReceipt] = useState<CompressedImage | null>(null);
+  const [pendingReceiptDelete, setPendingReceiptDelete] = useState(false);
 
   useEffect(() => {
     setDate(initial?.date ?? '');
     setOdm(initial ? String(initial.odm) : '');
     setKwh(initial ? String(initial.kwh) : '');
     setPrice(initial ? String(initial.price) : '');
+    setPendingReceipt(null);
+    setPendingReceiptDelete(false);
   }, [initial]);
 
   const kwhNum = Number(kwh);
@@ -39,6 +50,18 @@ export default function ChargeDialog({
     };
 
   const chargeKey = (r: ChargeRecord): string | number => r.id ?? r.odm;
+
+  const applyReceipt = async (entityId: number): Promise<void> => {
+    if (pendingReceiptDelete) {
+      if (receiptImage) await deleteImage(receiptImage.id);
+    } else if (pendingReceipt) {
+      await uploadImage(pendingReceipt, {
+        entityType: 'charge_record',
+        entityId,
+        kind: 'receipt',
+      });
+    }
+  };
 
   const handleSave = (e: FormEvent): void => {
     e.preventDefault();
@@ -65,11 +88,30 @@ export default function ChargeDialog({
     if (currentVehicle === '') return alert('請選擇座駕');
     if (isEdit) {
       updateChargeRecord(currentVehicle, rec)
-        .then(() => done({ ...rec, pricePerKwh: unitPrice }))
+        .then(async () => {
+          try {
+            await applyReceipt(Number(chargeKey(initial!)));
+          } catch {
+            alert('記錄已儲存，但收據未能更新，請再編輯記錄重試');
+          }
+          onImageChanged?.();
+          done({ ...rec, pricePerKwh: unitPrice });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     } else {
       addChargeRecord(currentVehicle, rec)
-        .then(() => done({ ...rec, pricePerKwh: unitPrice }))
+        .then(async res => {
+          const newId = res.data?.id;
+          if ((pendingReceipt || pendingReceiptDelete) && newId != null) {
+            try {
+              await applyReceipt(Number(newId));
+            } catch {
+              alert('記錄已儲存，但收據上載失敗，請編輯記錄重試');
+            }
+          }
+          onImageChanged?.();
+          done({ ...rec, ...(newId != null ? { id: Number(newId) } : {}), pricePerKwh: unitPrice });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     }
   };
@@ -95,6 +137,23 @@ export default function ChargeDialog({
               <input type="number" min="0" step="any" value={price} onChange={handleChange(setPrice)} required />
             </label>
             <span className="unit-box">$ {unitPrice.toFixed(2)} / kWh</span>
+          </div>
+          <div className="form-row">
+            <label>收據圖片
+              <ReceiptField
+                image={receiptImage}
+                pending={pendingReceipt}
+                pendingDelete={pendingReceiptDelete}
+                onPick={compressed => {
+                  setPendingReceipt(compressed);
+                  setPendingReceiptDelete(false);
+                }}
+                onRemove={() => {
+                  if (pendingReceipt) setPendingReceipt(null);
+                  else setPendingReceiptDelete(true);
+                }}
+              />
+            </label>
           </div>
           <div className="dialog-actions">
             <button type="button" onClick={onClose}>取消</button>

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
-from routers import chargerecords, datedrecords, finerecords, fuelrecords, parkingrecords, servicerecords, tunnelrecords, vehicles  # noqa: E402
+from routers import chargerecords, datedrecords, finerecords, fuelrecords, images, parkingrecords, servicerecords, tunnelrecords, vehicles  # noqa: E402
 
 app = FastAPI(title="vehicle-management")
 
@@ -29,6 +29,7 @@ else:
         allow_headers=["*"],
     )
 
+app.include_router(images.router)
 app.include_router(vehicles.router)
 app.include_router(fuelrecords.router)
 app.include_router(chargerecords.router)

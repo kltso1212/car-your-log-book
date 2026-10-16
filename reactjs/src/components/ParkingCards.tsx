@@ -1,14 +1,18 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteParkingRecord, type ParkingRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ParkingRecordContext } from '../contexts/ParkingRecordContext';
 import { RentalTypeName } from '../types/Parking';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for parking visits (mirrors FuelRecordCards).
 export default function ParkingCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: ParkingRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -36,7 +40,9 @@ export default function ParkingCards({
       {parkingRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        parkingRecords.map((record, i) => (
+        parkingRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? 0));
+          return (
           <div className="card" key={record.id ?? `${record.date}-${record.carpark}-${i}`}>
             <div className="card-info">
               <div className="card-title">{record.date} · {record.carpark}</div>
@@ -45,6 +51,7 @@ export default function ParkingCards({
               </div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date} ${record.carpark}`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -61,7 +68,8 @@ export default function ParkingCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

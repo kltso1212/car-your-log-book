@@ -42,6 +42,7 @@ namespace dotnet.Services
                 .Where(f => f.Id == id && f.VehicleId == vehicleId).FirstOrDefault());
             if (record is null) return false;
 
+            ImageStorage.DeleteFor(_context, "tunnel_record", (int)record.Id);
             _context.TunnelRecords.Remove(record);
             await _context.SaveChangesAsync();
             return true;

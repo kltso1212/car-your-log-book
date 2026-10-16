@@ -1,9 +1,9 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { PageContext } from '../contexts/PageContext';
-import { Page, pageIndexFromSlug, pageSlugs, isSlugForVehicle, defaultSlugForVehicle } from '../types/Page';
-import { vehicleLabelOf, vehiclePlateOf, vehicleTypeOf } from '../types/Vehicle';
+import { Page, pageIndexFromSlug, pageSlugs, isSlugForVehicle } from '../types/Page';
+import { vehiclePlateOf, vehicleTypeOf } from '../types/Vehicle';
 import FuelRecordPage from './FuelRecordPage';
 import ChargePage from './ChargePage';
 import TunnelPage from './TunnelPage';
@@ -14,14 +14,12 @@ import InsurancePage from './InsurancePage';
 import LicencePage from './LicencePage';
 import SummaryPage from './SummaryPage';
 import ComingSoonPage from './ComingSoonPage';
-import VehicleDialog from '../components/VehicleDialog';
 
 export default function VehicleRoutePage() {
   const { vehicleId, slug } = useParams();
   const navigate = useNavigate();
   const { vehicles, currentVehicle, setCurrentVehicle } = useContext(VehicleContext);
   const { currentPage, setCurrentPage } = useContext(PageContext);
-  const [showEdit, setShowEdit] = useState(false);
 
   const decodedId: number | '' = vehicleId !== undefined && vehicleId !== '' && Number.isInteger(Number(vehicleId))
     ? Number(vehicleId)
@@ -51,30 +49,22 @@ export default function VehicleRoutePage() {
     );
   }
 
-  // Electric vehicles use the charge tab instead of fuel (and vice versa).
+  // Tab no longer valid for the vehicle type (e.g. fuel tab on an electric
+  // vehicle after editing its type) -> land on the summary tab instead.
   const currentType = vehicleTypeOf(vehicles, decodedId);
   if (vehicles.length > 0 && !isSlugForVehicle(slug, currentType)) {
-    navigate(`/vehicles/${decodedId}/${defaultSlugForVehicle(currentType)}`, { replace: true });
+    navigate(`/vehicles/${decodedId}/summary`, { replace: true });
     return null;
   }
 
   const plate = vehiclePlateOf(vehicles, decodedId);
-  const current = vehicles.find(v => v.id === decodedId);
-  // Summary tab: one-line title "{plate} {brand} {model} {year}" + edit button;
-  // other tabs show "{plate}的{xxx}記錄".
-  const heading = slugIndex === 0
-    ? vehicleLabelOf(vehicles, decodedId)
-    : `${plate}的${Page(slugIndex) ?? ''}記錄`;
+  // Summary tab has no heading (the identity bar above shows the vehicle
+  // name); other tabs show "{plate}的{xxx}記錄".
+  const heading = `${plate}的${Page(slugIndex) ?? ''}記錄`;
   return (
     <div>
-      <h1>{heading}{slugIndex === 0 && current && (
-        <button className="icon-button" title="編輯座駕" aria-label="編輯座駕" onClick={() => setShowEdit(true)}>✏️</button>
-      )}</h1>
-      {showEdit && current && (
-        <VehicleDialog
-          initial={current}
-          onClose={() => setShowEdit(false)}
-        />
+      {slugIndex !== 0 && (
+        <h2>{heading}</h2>
       )}
       {slug === 'fuel' ? (
         <FuelRecordPage />

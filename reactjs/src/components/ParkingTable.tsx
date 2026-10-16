@@ -1,12 +1,17 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteParkingRecord, type ParkingRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ParkingRecordContext } from '../contexts/ParkingRecordContext';
 import { RentalTypeName } from '../types/Parking';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
-export default function ParkingTable({ onEdit }: { onEdit: (record: ParkingRecord) => void }) {
+export default function ParkingTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: ParkingRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { parkingRecords, setParkingRecords } = useContext(ParkingRecordContext);
 
@@ -39,13 +44,16 @@ export default function ParkingTable({ onEdit }: { onEdit: (record: ParkingRecor
               </td>
             </tr>
           ) : (
-            parkingRecords.map((record, i) => (
+            parkingRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? 0));
+              return (
               <tr key={record.id ?? `${record.date}-${record.carpark}-${i}`}>
                 <td>{record.date}</td>
                 <td>{record.carpark}</td>
                 <td>{RentalTypeName(record.rentalType)}</td>
                 <td>$ {Number(record.fee).toFixed(2)}</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date} ${record.carpark}`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -62,7 +70,8 @@ export default function ParkingTable({ onEdit }: { onEdit: (record: ParkingRecor
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

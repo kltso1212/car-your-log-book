@@ -18,9 +18,11 @@ import java.util.Optional;
 public class VehicleService {
 
     private final VehicleRepository vehicles;
+    private final ImageStorageService imageStorage;
 
-    public VehicleService(VehicleRepository vehicles) {
+    public VehicleService(VehicleRepository vehicles, ImageStorageService imageStorage) {
         this.vehicles = vehicles;
+        this.imageStorage = imageStorage;
     }
 
     public static String normalizePlate(String plate) {
@@ -88,6 +90,8 @@ public class VehicleService {
     @Transactional
     public boolean deleteById(Integer id) {
         if (!vehicles.existsById(id)) return false;
+        // Capture the record ids (and their images) before the cascade drops the rows.
+        imageStorage.deleteVehicleImages(id);
         vehicles.deleteById(id);
         return true;
     }

@@ -5,6 +5,7 @@ import sqlite3
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import FuelRecordIn, FuelRecordOut, Message
 
 router = APIRouter(prefix="/api/fuelrecords", tags=["fuelrecords"])
@@ -27,19 +28,21 @@ def list_records(vehicle_id: int):
     return db.rows(_LIST_SQL, (vehicle_id,))
 
 
-@router.post("/{vehicle_id}", response_model=Message, status_code=status.HTTP_201_CREATED)
+@router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
 def add_record(vehicle_id: int, body: FuelRecordIn):
-    db.execute(
+    new_id = db.insert(
         """INSERT INTO fuel_records
         (vehicle_id, date, odm, vendor, fuel_type, litre, price)
         VALUES (?, ?, ?, ?, ?, ?, ?)""",
         (vehicle_id, body.date, body.odm, body.vendor, body.fuelType, body.litre, body.price),
     )
-    return Message(message="入油記錄已新增")
+    return {"message": "入油記錄已新增", "id": new_id}
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: int, odm: int):
+    for rec in db.rows("SELECT id FROM fuel_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm)):
+        images.delete_images_for("fuel_record", rec["id"])
     db.execute("DELETE FROM fuel_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

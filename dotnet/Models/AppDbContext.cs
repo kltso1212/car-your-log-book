@@ -14,6 +14,7 @@ namespace dotnet.Models
         public virtual DbSet<ServiceRecord> ServiceRecords { get; set; }
         public virtual DbSet<InsuranceRecord> InsuranceRecords { get; set; }
         public virtual DbSet<LicenceRecord> LicenceRecords { get; set; }
+        public virtual DbSet<Image> Images { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Vehicle>(entity =>
@@ -215,6 +216,28 @@ namespace dotnet.Models
                 entity.HasIndex(e => new { e.VehicleId, e.Date }).IsUnique();
 
                 entity.ToTable("licence_records");
+            });
+
+            modelBuilder.Entity<Image>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id).HasColumnType("INTEGER").HasColumnName("id")
+                    .ValueGeneratedOnAdd();
+                entity.Property(e => e.EntityType).HasColumnType("TEXT").HasColumnName("entity_type");
+                entity.Property(e => e.EntityId).HasColumnType("INTEGER").HasColumnName("entity_id");
+                entity.Property(e => e.Kind).HasColumnType("TEXT").HasColumnName("kind");
+                entity.Property(e => e.FileName).HasColumnType("TEXT").HasColumnName("file_name");
+                entity.Property(e => e.Mime).HasColumnType("TEXT").HasColumnName("mime");
+                entity.Property(e => e.Width).HasColumnType("INTEGER").HasColumnName("width");
+                entity.Property(e => e.Height).HasColumnType("INTEGER").HasColumnName("height");
+                entity.Property(e => e.SizeBytes).HasColumnType("INTEGER").HasColumnName("size_bytes");
+                entity.Property(e => e.CreatedAt).HasColumnType("TEXT").HasColumnName("created_at");
+
+                // No FK: images outlive cascading record deletes via explicit cleanup.
+                entity.HasIndex(e => new { e.EntityType, e.EntityId, e.Kind }).IsUnique();
+
+                entity.ToTable("images");
             });
 
             base.OnModelCreating(modelBuilder);

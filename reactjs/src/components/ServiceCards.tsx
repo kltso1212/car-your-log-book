@@ -1,15 +1,19 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteServiceRecord, type ServiceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ServiceRecordContext } from '../contexts/ServiceRecordContext';
 import { serviceItemName } from '../types/ServiceItems';
 import { displayCustomList } from '../utils/customList';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for service records (mirrors FuelRecordCards).
 export default function ServiceCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: ServiceRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -44,7 +48,9 @@ export default function ServiceCards({
       {serviceRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        serviceRecords.map((record, i) => (
+        serviceRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? record.odm));
+          return (
           <div className="card" key={record.id ?? `${record.date}-${record.odm}`}>
             <div className="card-info">
               <div className="card-title">
@@ -53,6 +59,7 @@ export default function ServiceCards({
               <div>{describe(record)}</div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date} ${record.odm} km`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -69,7 +76,8 @@ export default function ServiceCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

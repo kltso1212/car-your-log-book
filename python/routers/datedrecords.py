@@ -7,6 +7,7 @@ import sqlite3
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import (
     InsuranceRecordIn,
     InsuranceRecordOut,
@@ -90,12 +91,14 @@ def add_licence(vehicle_id: int, body: LicenceRecordIn):
 
 @insurance_router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_insurance(vehicle_id: int, record_id: int):
+    images.delete_images_for("insurance_record", record_id)
     db.execute("DELETE FROM insurance_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @licence_router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_licence(vehicle_id: int, record_id: int):
+    images.delete_images_for("licence_record", record_id)
     db.execute("DELETE FROM licence_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

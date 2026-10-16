@@ -20,10 +20,13 @@ public class FineRecordService {
 
     private final VehicleRepository vehicles;
     private final FineRecordRepository fineRecords;
+    private final ImageStorageService imageStorage;
 
-    public FineRecordService(VehicleRepository vehicles, FineRecordRepository fineRecords) {
+    public FineRecordService(VehicleRepository vehicles, FineRecordRepository fineRecords,
+            ImageStorageService imageStorage) {
         this.vehicles = vehicles;
         this.fineRecords = fineRecords;
+        this.imageStorage = imageStorage;
     }
 
     @Transactional(readOnly = true)
@@ -49,6 +52,8 @@ public class FineRecordService {
 
     @Transactional
     public boolean deleteById(Integer vehicleId, long id) {
+        // Nodejs drops the record's images before the DELETE statement.
+        imageStorage.deleteImagesFor("fine_record", id);
         var existing = fineRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         fineRecords.delete(existing.get());

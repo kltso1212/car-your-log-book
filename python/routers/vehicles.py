@@ -6,6 +6,7 @@ import sqlite3
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import Message, VehicleCreated, VehicleIn, VehicleOut, VehicleUpdate, is_valid_year, normalize_plate
 
 router = APIRouter(prefix="/api/vehicles", tags=["vehicles"])
@@ -115,5 +116,6 @@ def update_vehicle(vehicle_id: int, body: VehicleUpdate):
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_vehicle(vehicle_id: int):
+    images.delete_vehicle_images(vehicle_id)  # before cascade drops the records
     db.execute("DELETE FROM vehicles WHERE id=?", (vehicle_id,))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

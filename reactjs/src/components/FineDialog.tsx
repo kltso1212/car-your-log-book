@@ -1,20 +1,27 @@
 import { useContext, useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { addFineRecord, updateFineRecord, type FineRecord } from '../services/api';
+import { addFineRecord, deleteImage, updateFineRecord, uploadImage, type FineRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FineRecordContext } from '../contexts/FineRecordContext';
 import { offenceIds, offenceName } from '../types/Offence';
 import { compareFineByDateDesc } from '../utils/fineSort';
 import { decodeCustomList, encodeCustomList } from '../utils/customList';
 import { ItemSelectionBody, type PickerGroup } from './ItemSelectionBody';
+import ReceiptField from './ReceiptField';
+import type { CompressedImage } from '../utils/image';
 
 // Shared insert/edit dialog. Offences use the shared picker body: selected
 // bubbles on top, checkbox list, 其他 key-in.
 export default function FineDialog({
   initial,
+  receiptImage,
+  onImageChanged,
   onClose,
 }: {
   initial?: FineRecord;
+  receiptImage?: ImageInfo | null;
+  onImageChanged?: () => void;
   onClose: () => void;
 }) {
   const isEdit = initial !== undefined;
@@ -25,6 +32,8 @@ export default function FineDialog({
   const [customs, setCustoms] = useState<string[]>([]);
   const [location, setLocation] = useState('');
   const [penalty, setPenalty] = useState('');
+  const [pendingReceipt, setPendingReceipt] = useState<CompressedImage | null>(null);
+  const [pendingReceiptDelete, setPendingReceiptDelete] = useState(false);
 
   useEffect(() => {
     setDate(initial?.date ?? '');
@@ -32,6 +41,8 @@ export default function FineDialog({
     setCustoms(decodeCustomList(initial?.customOffence));
     setLocation(initial?.location ?? '');
     setPenalty(initial ? String(initial.penalty) : '');
+    setPendingReceipt(null);
+    setPendingReceiptDelete(false);
   }, [initial]);
 
   const groups: PickerGroup[] = [
@@ -43,6 +54,18 @@ export default function FineDialog({
     (e: ChangeEvent<HTMLInputElement>): void => {
       setter(e.target.value);
     };
+
+  const applyReceipt = async (entityId: number): Promise<void> => {
+    if (pendingReceiptDelete) {
+      if (receiptImage) await deleteImage(receiptImage.id);
+    } else if (pendingReceipt) {
+      await uploadImage(pendingReceipt, {
+        entityType: 'fine_record',
+        entityId,
+        kind: 'receipt',
+      });
+    }
+  };
 
   const handleSave = (e: FormEvent): void => {
     e.preventDefault();
@@ -68,11 +91,30 @@ export default function FineDialog({
       const id = initial!.id;
       if (id === undefined) return alert('找不到記錄!');
       updateFineRecord(currentVehicle, { ...rec, id })
-        .then(() => done({ ...rec, id }))
+        .then(async () => {
+          try {
+            await applyReceipt(Number(id));
+          } catch {
+            alert('記錄已儲存，但收據未能更新，請再編輯記錄重試');
+          }
+          onImageChanged?.();
+          done({ ...rec, id });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     } else {
       addFineRecord(currentVehicle, rec)
-        .then(res => done({ ...rec, id: res.data?.id }))
+        .then(async res => {
+          const newId = res.data?.id;
+          if ((pendingReceipt || pendingReceiptDelete) && newId != null) {
+            try {
+              await applyReceipt(Number(newId));
+            } catch {
+              alert('記錄已儲存，但收據上載失敗，請編輯記錄重試');
+            }
+          }
+          onImageChanged?.();
+          done({ ...rec, id: res.data?.id });
+        })
         .catch(err => alert(err.response?.data?.message ?? err));
     }
   };
@@ -108,6 +150,23 @@ export default function FineDialog({
           <div className="form-row">
             <label>地點 (選填)
               <input value={location} onChange={handleChange(setLocation)} placeholder="地點" />
+            </label>
+          </div>
+          <div className="form-row">
+            <label>收據圖片
+              <ReceiptField
+                image={receiptImage}
+                pending={pendingReceipt}
+                pendingDelete={pendingReceiptDelete}
+                onPick={compressed => {
+                  setPendingReceipt(compressed);
+                  setPendingReceiptDelete(false);
+                }}
+                onRemove={() => {
+                  if (pendingReceipt) setPendingReceipt(null);
+                  else setPendingReceiptDelete(true);
+                }}
+              />
             </label>
           </div>
           <div className="dialog-actions">

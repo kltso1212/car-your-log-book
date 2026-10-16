@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * GetAll(vehicleId) ordered by odm / GetByOdm / Add (false when vehicle
- * missing or odm duplicate) / DeleteByOdm (false when missing) /
- * Update (by surrogate id, scoped to vehicle).
+ * GetAll(vehicleId) ordered by odm / GetByOdm / Add (new id; -1 odm duplicate,
+ * 0 vehicle missing) / DeleteByOdm (false when missing, drops the record's
+ * images first) / Update (by surrogate id, scoped to vehicle).
  */
 @Service
 public class FuelRecordService {
@@ -22,10 +22,13 @@ public class FuelRecordService {
 
     private final VehicleRepository vehicles;
     private final FuelRecordRepository fuelRecords;
+    private final ImageStorageService imageStorage;
 
-    public FuelRecordService(VehicleRepository vehicles, FuelRecordRepository fuelRecords) {
+    public FuelRecordService(VehicleRepository vehicles, FuelRecordRepository fuelRecords,
+            ImageStorageService imageStorage) {
         this.vehicles = vehicles;
         this.fuelRecords = fuelRecords;
+        this.imageStorage = imageStorage;
     }
 
     @Transactional(readOnly = true)
@@ -41,10 +44,10 @@ public class FuelRecordService {
     }
 
     @Transactional
-    public boolean add(Integer vehicleId, FuelRecordDto.Request req) {
-        if (req == null) return false;
-        if (!vehicles.existsById(vehicleId)) return false;
-        if (fuelRecords.existsByVehicleIdAndOdm(vehicleId, req.odm())) return false;
+    public Long add(Integer vehicleId, FuelRecordDto.Request req) {
+        if (req == null) return 0L;
+        if (!vehicles.existsById(vehicleId)) return 0L;
+        if (fuelRecords.existsByVehicleIdAndOdm(vehicleId, req.odm())) return -1L;
         FuelRecord r = new FuelRecord();
         r.setVehicleId(vehicleId);
         r.setDate(req.date());
@@ -53,13 +56,15 @@ public class FuelRecordService {
         r.setFuelType(req.fuelType());
         r.setLitre(req.litre());
         r.setPrice(req.price());
-        fuelRecords.save(r);
-        return true;
+        return fuelRecords.save(r).getId();
     }
 
     @Transactional
     public boolean deleteByOdm(Integer vehicleId, int odm) {
-        if (!fuelRecords.existsByVehicleIdAndOdm(vehicleId, odm)) return false;
+        var existing = fuelRecords.findByVehicleIdAndOdm(vehicleId, odm);
+        if (existing.isEmpty()) return false;
+        // Nodejs selects the record ids first, then drops their images.
+        imageStorage.deleteImagesFor("fuel_record", existing.get().getId());
         fuelRecords.deleteByVehicleIdAndOdm(vehicleId, odm);
         return true;
     }

@@ -1,15 +1,23 @@
 ﻿import type { MouseEvent } from 'react';
 import { useContext } from 'react';
-import { deleteFuelRecord } from '../services/api';
+import { deleteFuelRecord, recordKey } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { FuelType } from '../types/FuelType';
 import { Vendor } from '../types/Vendor';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FuelRecordContext } from '../contexts/FuelRecordContext';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
 import type { FuelRecord } from '../types';
 
-export default function FuelRecordTable({ onEdit }: { onEdit: (record: FuelRecord) => void }) {
+export default function FuelRecordTable({
+  images,
+  onEdit,
+}: {
+  images: Map<string, ImageInfo>;
+  onEdit: (record: FuelRecord) => void;
+}) {
   const { currentVehicle } = useContext(VehicleContext);
   const { fuelRecords, setFuelRecords } = useContext(FuelRecordContext);
 
@@ -42,7 +50,9 @@ export default function FuelRecordTable({ onEdit }: { onEdit: (record: FuelRecor
               </td>
             </tr>
           ) : (
-            fuelRecords.map((record, i) => (
+            fuelRecords.map((record, i) => {
+              const receipt = images.get(String(recordKey(record)));
+              return (
               <tr key={record.id ?? record.Id ?? record.odm}>
                 <td>{record.date}</td>
                 <td>{Number(record.odm)} km</td>
@@ -52,6 +62,7 @@ export default function FuelRecordTable({ onEdit }: { onEdit: (record: FuelRecor
                 <td>$ {Number(record.price).toFixed(2)}</td>
                 <td>$ {Number(record.pricePerLitre ?? 0).toFixed(2)} / L</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date} ${record.odm} km`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -68,7 +79,8 @@ export default function FuelRecordTable({ onEdit }: { onEdit: (record: FuelRecor
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

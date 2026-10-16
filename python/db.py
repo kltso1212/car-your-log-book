@@ -109,6 +109,19 @@ CREATE TABLE IF NOT EXISTS licence_records (
     fee REAL NOT NULL DEFAULT 0,
     UNIQUE (vehicle_id, date)
 );
+CREATE TABLE IF NOT EXISTS images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    mime TEXT NOT NULL,
+    width INTEGER,
+    height INTEGER,
+    size_bytes INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (entity_type, entity_id, kind)
+);
 """
 
 def _conn() -> sqlite3.Connection:

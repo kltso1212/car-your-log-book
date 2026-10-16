@@ -1,14 +1,18 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteLicenceRecord, type LicenceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { LicenceRecordContext } from '../contexts/LicenceRecordContext';
 import { LicenceTypeName } from '../types/DatedTypes';
+import ReceiptLink from './ReceiptLink';
 
 // Mobile card list for licence fees (mirrors FuelRecordCards).
 export default function LicenceCards({
+  images,
   onEdit,
 }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: LicenceRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -36,13 +40,16 @@ export default function LicenceCards({
       {licenceRecords.length === 0 ? (
         <h2>沒有記錄</h2>
       ) : (
-        licenceRecords.map((record, i) => (
+        licenceRecords.map((record, i) => {
+          const receipt = images.get(String(record.id ?? 0));
+          return (
           <div className="card" key={record.id ?? `${record.date}-${i}`}>
             <div className="card-info">
               <div className="card-title">{record.date} · {LicenceTypeName(record.type)}</div>
               <div>$ {Number(record.fee).toFixed(2)}</div>
             </div>
             <div className="card-side">
+              <ReceiptLink receipt={receipt} label={`${record.date}牌費記錄`} />
               <button
                 className="icon-button"
                 title="編輯"
@@ -59,7 +66,8 @@ export default function LicenceCards({
               </button>
             </div>
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

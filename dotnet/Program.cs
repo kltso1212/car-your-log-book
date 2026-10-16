@@ -26,6 +26,11 @@ builder.Services.AddScoped<IServiceRecordService, ServiceRecordService>();
 builder.Services.AddScoped<IInsuranceRecordService, InsuranceRecordService>();
 builder.Services.AddScoped<ILicenceRecordService, LicenceRecordService>();
 
+// Image files live next to the SQLite file so both share one volume:
+// /data/sqlite.db + /data/uploads in compose, ../sqlite.db + ../uploads locally.
+// UPLOAD_DIR overrides the location (same env var in every backend).
+ImageStorage.Init(builder.Configuration);
+
 var app = builder.Build();
 
 // SQLite code-first without migrations: create the file + tables on start.
@@ -129,6 +134,20 @@ using (var scope = app.Services.CreateScope())
     cmd.CommandText =
         "CREATE UNIQUE INDEX IF NOT EXISTS IX_licence_records_vehicle_id_date " +
         "ON licence_records (vehicle_id, date)";
+    cmd.ExecuteNonQuery();
+    cmd.CommandText =
+        "CREATE TABLE IF NOT EXISTS images (" +
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "entity_type TEXT NOT NULL, " +
+        "entity_id INTEGER NOT NULL, " +
+        "kind TEXT NOT NULL, " +
+        "file_name TEXT NOT NULL, " +
+        "mime TEXT NOT NULL, " +
+        "width INTEGER, " +
+        "height INTEGER, " +
+        "size_bytes INTEGER NOT NULL, " +
+        "created_at TEXT NOT NULL, " +
+        "UNIQUE (entity_type, entity_id, kind))";
     cmd.ExecuteNonQuery();
 }
 

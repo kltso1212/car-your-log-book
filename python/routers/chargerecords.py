@@ -5,6 +5,7 @@ import sqlite3
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from routers.vehicles import _is_unique_violation
 from schemas import ChargeRecordIn, ChargeRecordOut, Message
 
@@ -24,10 +25,10 @@ def list_records(vehicle_id: int):
     return db.rows(_LIST_SQL, (vehicle_id,))
 
 
-@router.post("/{vehicle_id}", response_model=Message, status_code=status.HTTP_201_CREATED)
+@router.post("/{vehicle_id}", status_code=status.HTTP_201_CREATED)
 def add_record(vehicle_id: int, body: ChargeRecordIn):
     try:
-        db.execute(
+        new_id = db.insert(
             """INSERT INTO charge_records
             (vehicle_id, date, odm, kwh, price)
             VALUES (?, ?, ?, ?, ?)""",
@@ -41,11 +42,13 @@ def add_record(vehicle_id: int, body: ChargeRecordIn):
             status_code=status.HTTP_409_CONFLICT,
             media_type="application/json",
         )
-    return Message(message="充電記錄已新增")
+    return {"message": "充電記錄已新增", "id": new_id}
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: int, odm: int):
+    for rec in db.rows("SELECT id FROM charge_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm)):
+        images.delete_images_for("charge_record", rec["id"])
     db.execute("DELETE FROM charge_records WHERE vehicle_id=? AND odm=?", (vehicle_id, odm))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

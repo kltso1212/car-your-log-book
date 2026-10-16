@@ -1,7 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { addVehicle, updateVehicle } from '../services/api';
+import { addVehicle, deleteImage, getImages, updateVehicle, uploadImage } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
+import VehicleAvatarField from './VehicleAvatarField';
+import type { StagedAvatar } from './VehicleAvatarField';
 import {
   isValidYear,
   normalizeVehicleType,
@@ -23,15 +26,19 @@ const brandSeed = (v?: Vehicle): { brand: string; customBrand: string } => {
 
 // Shared insert/edit dialog for vehicles (same convention as the record
 // dialogs: isEdit = initial !== undefined). Type is editable in both modes.
-// On insert the parent gets onInserted(id) so it can navigate to the new car.
+// On insert the parent gets onInserted(id) so it can navigate to the new car;
+// onSaved fires after the avatar image upload/delete settled so the identity
+// bar can re-fetch it.
 export default function VehicleDialog({
   initial,
   onClose,
   onInserted,
+  onSaved,
 }: {
   initial?: Vehicle;
   onClose: () => void;
   onInserted?: (id: number) => void;
+  onSaved?: () => void;
 }) {
   const isEdit = initial !== undefined;
   const { setVehicles, setCurrentVehicle } = useContext(VehicleContext);
@@ -40,6 +47,10 @@ export default function VehicleDialog({
   const [{ brand, customBrand }, setBrandSeed] = useState(() => brandSeed(initial));
   const [model, setModel] = useState(initial?.model ?? '');
   const [year, setYear] = useState(initial?.year === null || initial?.year === undefined ? '' : String(initial.year));
+  const [avatar, setAvatar] = useState<ImageInfo | null>(null);
+  const [avatarSource, setAvatarSource] = useState<ImageInfo | null>(null);
+  const [pendingAvatar, setPendingAvatar] = useState<StagedAvatar | null>(null);
+  const [pendingAvatarDelete, setPendingAvatarDelete] = useState(false);
 
   useEffect(() => {
     setPlate(initial?.plate ?? '');
@@ -47,7 +58,48 @@ export default function VehicleDialog({
     setBrandSeed(brandSeed(initial));
     setModel(initial?.model ?? '');
     setYear(initial?.year === null || initial?.year === undefined ? '' : String(initial.year));
+    setPendingAvatar(null);
+    setPendingAvatarDelete(false);
   }, [initial]);
+
+  // Edit mode: load the current avatar (+ uncropped source) for the preview.
+  const initialId = initial?.id;
+  useEffect(() => {
+    if (initialId === undefined) {
+      setAvatar(null);
+      setAvatarSource(null);
+      return;
+    }
+    getImages('vehicle', [initialId])
+      .then(res => {
+        setAvatar(res.data.find(i => i.kind === 'avatar') ?? null);
+        setAvatarSource(res.data.find(i => i.kind === 'avatar_source') ?? null);
+      })
+      .catch(() => {
+        setAvatar(null);
+        setAvatarSource(null);
+      });
+  }, [initialId]);
+
+  // Applies the staged avatar after the vehicle row exists: upload replaces
+  // the old avatar rows server-side; a plain delete removes both rows.
+  const applyAvatar = async (id: number): Promise<void> => {
+    if (pendingAvatar) {
+      await uploadImage(pendingAvatar.square, {
+        entityType: 'vehicle',
+        entityId: id,
+        kind: 'avatar',
+        source: {
+          blob: pendingAvatar.source.blob,
+          width: pendingAvatar.source.width,
+          height: pendingAvatar.source.height,
+        },
+      });
+    } else if (pendingAvatarDelete) {
+      if (avatar) await deleteImage(avatar.id);
+      if (avatarSource) await deleteImage(avatarSource.id);
+    }
+  };
 
   const handleChange =
     (setter: (v: string) => void) =>
@@ -68,19 +120,31 @@ export default function VehicleDialog({
     if (isEdit) {
       const id = initial!.id;
       updateVehicle(id, rec)
-        .then(() => {
+        .then(async () => {
           setVehicles(prev => prev.map(v => (v.id === id ? { id, ...rec } : v)));
+          try {
+            await applyAvatar(id);
+          } catch (err: any) {
+            alert(err.response?.data?.message ?? err);
+          }
+          onSaved?.();
           onClose();
         })
         .catch(err => alert(err.response?.data?.message ?? err));
     } else {
       addVehicle(rec)
-        .then(res => {
+        .then(async res => {
           const id = res.data?.id;
           if (typeof id !== 'number') return alert('新增失敗，請重新載入');
           setVehicles(prev => [...prev, { id, ...rec }].sort((a, b) => a.id - b.id));
           setCurrentVehicle(id);
+          try {
+            await applyAvatar(id);
+          } catch (err: any) {
+            alert(err.response?.data?.message ?? err);
+          }
           onInserted?.(id);
+          onSaved?.();
           onClose();
         })
         .catch(err => alert(err.response?.data?.message ?? err));
@@ -144,6 +208,23 @@ export default function VehicleDialog({
                 onChange={handleChange(setYear)}
                 placeholder="年份"
                 inputMode="numeric"
+              />
+            </label>
+          </div>
+          <div className="form-row">
+            <label>座駕圖片
+              <VehicleAvatarField
+                image={avatar}
+                pending={pendingAvatar}
+                pendingDelete={pendingAvatarDelete}
+                onPick={staged => {
+                  setPendingAvatar(staged);
+                  setPendingAvatarDelete(false);
+                }}
+                onRemove={() => {
+                  if (pendingAvatar) setPendingAvatar(null);
+                  else setPendingAvatarDelete(true);
+                }}
               />
             </label>
           </div>

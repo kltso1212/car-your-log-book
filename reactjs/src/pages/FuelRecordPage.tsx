@@ -1,5 +1,6 @@
-﻿import { useState, useEffect, useMemo, useContext } from 'react';
-import { getFuelRecords } from '../services/api';
+﻿import { useState, useEffect, useMemo, useContext, useCallback } from 'react';
+import { getFuelRecords, getImages, recordKey } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { FuelRecordContext } from '../contexts/FuelRecordContext';
 import FuelRecordTable from '../components/FuelRecordTable';
@@ -16,6 +17,9 @@ export default function FuelRecordPage() {
   const [fuelRecords, setFuelRecords] = useState<FuelRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState<DialogState>({ mode: 'closed' });
+  const [images, setImages] = useState<Map<string, ImageInfo>>(new Map());
+  const [imagesTick, setImagesTick] = useState(0);
+  const refreshImages = useCallback(() => setImagesTick(t => t + 1), []);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -34,6 +38,22 @@ export default function FuelRecordPage() {
       })
       .finally(() => setLoading(false));
   }, [currentVehicle]);
+
+  useEffect(() => {
+    if (!currentVehicle || fuelRecords.length === 0) {
+      setImages(new Map());
+      return;
+    }
+    getImages('fuel_record', fuelRecords.map(r => recordKey(r)))
+      .then(res => {
+        const map = new Map<string, ImageInfo>();
+        for (const img of res.data) {
+          if (img.kind === 'receipt') map.set(String(img.entityId), img);
+        }
+        setImages(map);
+      })
+      .catch(() => setImages(new Map()));
+  }, [currentVehicle, fuelRecords, imagesTick]);
 
   const fuelConsumption = useMemo<number>(() => {
     if (fuelRecords.length <= 1) return 0;
@@ -62,16 +82,20 @@ export default function FuelRecordPage() {
           <h2>正在載入...</h2>
         ) : isMobile ? (
           <FuelRecordCards
+            images={images}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         ) : (
           <FuelRecordTable
+            images={images}
             onEdit={record => setDialog({ mode: 'edit', record })}
           />
         )}
         {dialog.mode !== 'closed' && (
           <FuelRecordDialog
             {...(dialog.mode === 'edit' ? { initial: dialog.record } : {})}
+            receiptImage={dialog.mode === 'edit' ? images.get(String(recordKey(dialog.record))) ?? null : null}
+            onImageChanged={refreshImages}
             onClose={() => setDialog({ mode: 'closed' })}
           />
         )}

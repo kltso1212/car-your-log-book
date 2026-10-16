@@ -19,10 +19,6 @@ export const isSlugForVehicle = (slug: string | undefined, vehicleType: number |
   return true;
 };
 
-/** Default landing tab for a vehicle type. */
-export const defaultSlugForVehicle = (vehicleType: number | undefined): PageSlug =>
-  vehicleType === ELECTRIC_TYPE ? CHARGE_SLUG : FUEL_SLUG;
-
 export const Page = (id: number): string | undefined => pages.at(id);
 
 export const pageIndexFromSlug = (slug: string | undefined): number => {

@@ -20,10 +20,13 @@ public class TunnelRecordService {
 
     private final VehicleRepository vehicles;
     private final TunnelRecordRepository tunnelRecords;
+    private final ImageStorageService imageStorage;
 
-    public TunnelRecordService(VehicleRepository vehicles, TunnelRecordRepository tunnelRecords) {
+    public TunnelRecordService(VehicleRepository vehicles, TunnelRecordRepository tunnelRecords,
+            ImageStorageService imageStorage) {
         this.vehicles = vehicles;
         this.tunnelRecords = tunnelRecords;
+        this.imageStorage = imageStorage;
     }
 
     @Transactional(readOnly = true)
@@ -48,6 +51,7 @@ public class TunnelRecordService {
 
     @Transactional
     public boolean deleteById(Integer vehicleId, long id) {
+        imageStorage.deleteImagesFor("tunnel_record", id);
         var existing = tunnelRecords.findById(id).filter(r -> r.getVehicleId().equals(vehicleId));
         if (existing.isEmpty()) return false;
         tunnelRecords.delete(existing.get());

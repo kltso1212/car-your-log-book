@@ -7,6 +7,7 @@ import json
 from fastapi import APIRouter, Response, status
 
 import db
+import images
 from schemas import FineRecordIn, FineRecordOut, Message
 
 router = APIRouter(prefix="/api/finerecords", tags=["finerecords"])
@@ -48,6 +49,7 @@ def add_record(vehicle_id: int, body: FineRecordIn):
 
 @router.delete("/{vehicle_id}/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(vehicle_id: int, record_id: int):
+    images.delete_images_for("fine_record", record_id)
     db.execute("DELETE FROM fine_records WHERE id=? AND vehicle_id=?", (record_id, vehicle_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

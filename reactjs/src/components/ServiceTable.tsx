@@ -1,10 +1,12 @@
 import type { MouseEvent } from 'react';
 import { useContext } from 'react';
 import { deleteServiceRecord, type ServiceRecord } from '../services/api';
+import type { ImageInfo } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ServiceRecordContext } from '../contexts/ServiceRecordContext';
 import { serviceItemName } from '../types/ServiceItems';
 import { displayCustomList } from '../utils/customList';
+import ReceiptLink from './ReceiptLink';
 import TableHeader from './TableHeader';
 
 const describe = (record: ServiceRecord): string => {
@@ -14,7 +16,8 @@ const describe = (record: ServiceRecord): string => {
   return names.join('、');
 };
 
-export default function ServiceTable({ onEdit }: {
+export default function ServiceTable({ images, onEdit }: {
+  images: Map<string, ImageInfo>;
   onEdit: (record: ServiceRecord) => void;
 }) {
   const { currentVehicle } = useContext(VehicleContext);
@@ -49,13 +52,16 @@ export default function ServiceTable({ onEdit }: {
               </td>
             </tr>
           ) : (
-            serviceRecords.map((record, i) => (
+            serviceRecords.map((record, i) => {
+              const receipt = images.get(String(record.id ?? record.odm));
+              return (
               <tr key={record.id ?? `${record.date}-${record.odm}`}>
                 <td>{record.date}</td>
                 <td>{Number(record.odm)} km</td>
                 <td>{describe(record)}</td>
                 <td>$ {Number(record.price).toFixed(2)}</td>
                 <td className="row-actions">
+                  <ReceiptLink receipt={receipt} label={`${record.date} ${record.odm} km`} />
                   <button
                     className="icon-button"
                     title="編輯"
@@ -72,7 +78,8 @@ export default function ServiceTable({ onEdit }: {
                   </button>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

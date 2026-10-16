@@ -241,3 +241,57 @@ export const updateLicenceRecord = async (vehicleId: number, rec: LicenceRecord)
 export const deleteLicenceRecord = async (vehicleId: number, rec: LicenceRecord) => {
   return api.delete(`/api/licencerecords/${vehicleId}/${rec.id ?? 0}`);
 };
+
+export interface ImageInfo {
+  id: number;
+  entityType: string;
+  entityId: number;
+  kind: string;
+  mime: string;
+  width: number | null;
+  height: number | null;
+  sizeBytes: number;
+  url: string;
+  createdAt: string;
+}
+
+export const imageFileUrl = (id: number | string): string =>
+  `${api.defaults.baseURL}/api/images/${id}/file`;
+
+export const getImages = async (entityType: string, entityIds: (number | string)[]) => {
+  return api.get<ImageInfo[]>('/api/images', {
+    params: { entityType, entityId: entityIds.join(',') },
+  });
+};
+
+export type ImageKind = 'avatar' | 'receipt';
+
+export const uploadImage = async (
+  file: { blob: Blob; width: number; height: number },
+  opts: {
+    entityType: string;
+    entityId: number;
+    kind: ImageKind;
+    source?: { blob: Blob; width: number; height: number };
+  },
+) => {
+  const form = new FormData();
+  const nameOf = (blob: Blob) => `image.${blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg'}`;
+  form.append('file', file.blob, nameOf(file.blob));
+  form.append('width', String(file.width));
+  form.append('height', String(file.height));
+  if (opts.source) {
+    form.append('source', opts.source.blob, nameOf(opts.source.blob));
+    form.append('sourceWidth', String(opts.source.width));
+    form.append('sourceHeight', String(opts.source.height));
+  }
+  return api.post<{ message: string; image: ImageInfo; source: ImageInfo | null }>(
+    `/api/images?entityType=${opts.entityType}&entityId=${opts.entityId}&kind=${opts.kind}`,
+    form,
+    { timeout: 30000 },
+  );
+};
+
+export const deleteImage = async (id: number | string) => {
+  return api.delete(`/api/images/${id}`);
+};

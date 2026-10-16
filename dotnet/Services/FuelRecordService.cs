@@ -9,7 +9,7 @@ namespace dotnet.Services
     {
         Task<IEnumerable<FuelRecordDto>> GetAllAsync(int vehicleId);
         Task<FuelRecord?> GetByOdmAsync(int vehicleId, int odm);
-        Task<bool> AddAsync(int vehicleId, FuelRecordDto req);
+        Task<long> AddAsync(int vehicleId, FuelRecordDto req);
         Task<bool> DeleteByOdmAsync(int vehicleId, int odm);
         Task<UpdateOutcome> UpdateAsync(int vehicleId, long id, FuelRecordDto req);
     }
@@ -33,22 +33,24 @@ namespace dotnet.Services
         {
             return await Task.Run(() => FuelRecords.Where(f => f.VehicleId == vehicleId && f.Odm == odm).FirstOrDefault());
         }
-        public async Task<bool> AddAsync(int vehicleId, FuelRecordDto req)
+        public async Task<long> AddAsync(int vehicleId, FuelRecordDto req)
         {
             var vehicle = await Task.Run(() => GetVehicle(vehicleId));
-            if (vehicle is null) return false;
+            if (vehicle is null) return 0;
             var fuelRecord = await GetByOdmAsync(vehicleId, req.Odm);
-            if (fuelRecord is not null) return false;
+            if (fuelRecord is not null) return -1; // UNIQUE(vehicle_id, odm) clash
 
-            await _context.FuelRecords.AddAsync(new(req) { VehicleId = vehicleId });
+            var record = new FuelRecord(req) { VehicleId = vehicleId };
+            await _context.FuelRecords.AddAsync(record);
             await _context.SaveChangesAsync();
-            return true;
+            return record.Id;
         }
         public async Task<bool> DeleteByOdmAsync(int vehicleId, int odm)
         {
             var fuelRecord = await Task.Run(() => GetByOdm(vehicleId, odm));
             if (fuelRecord is null) return false;
 
+            ImageStorage.DeleteFor(_context, "fuel_record", (int)fuelRecord.Id);
             _context.FuelRecords.Remove(fuelRecord);
             await _context.SaveChangesAsync();
             return true;
