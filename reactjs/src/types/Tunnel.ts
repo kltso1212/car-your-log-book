@@ -20,6 +20,7 @@ export const tunnels: Tunnel[] = [
   { id: 109, tc: '啟德隧道', bounds: ['九龍灣方向', '土瓜灣方向'] },
   { id: 110, tc: '長青/南灣隧道', bounds: ['青衣方向', '荃灣方向'] },
   { id: 111, tc: '將軍澳-藍田隧道', bounds: ['將軍澳方向', '藍田方向'] },
+  { id: 112, tc: '中九龍繞道', bounds: ['九龍灣方向', '油麻地方向'] },
 ];
 
 export const TunnelName = (id: number): string =>
