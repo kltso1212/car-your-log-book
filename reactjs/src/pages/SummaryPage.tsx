@@ -12,7 +12,7 @@ import {
 } from '../services/api';
 import { VehicleContext } from '../contexts/VehicleContext';
 import { ELECTRIC_TYPE } from '../types/Page';
-import { vehicleTypeOf } from '../types/Vehicle';
+import { vehiclePlateOf, vehicleTypeOf } from '../types/Vehicle';
 import { averageConsumption, averagePowerConsumption, maxOdmRecord } from '../utils/fuelStats';
 import { insuranceExpiry, licenceExpiry, isExpiringSoon } from '../utils/expiry';
 import CalendarButtons from '../components/CalendarButtons';
@@ -23,6 +23,7 @@ import type { FuelRecord } from '../types';
 export default function SummaryPage() {
   const { vehicles, currentVehicle } = useContext(VehicleContext);
   const isElectric = vehicleTypeOf(vehicles, currentVehicle) === ELECTRIC_TYPE;
+  const plate = vehiclePlateOf(vehicles, currentVehicle);
   const [fuelRecords, setFuelRecords] = useState<FuelRecord[]>([]);
   const [chargeRecords, setChargeRecords] = useState<ChargeRecord[]>([]);
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
@@ -111,10 +112,10 @@ export default function SummaryPage() {
           )}
           {insuranceDue && (
             <CalendarButtons
-              title={`保險到期：${currentVehicle}`}
+              title={`保險到期：${plate}`}
               date={insuranceDue}
-              filename={`保險到期-${currentVehicle}`}
-              description={`車輛 ${currentVehicle} 保險到期日 ${insuranceDue}，請續保。`}
+              filename={`保險到期-${plate}`}
+              description={`車輛 ${plate} 保險到期日 ${insuranceDue}，請續保。`}
             />
           )}
         </dd>
@@ -132,10 +133,10 @@ export default function SummaryPage() {
           )}
           {licenceDue && (
             <CalendarButtons
-              title={`牌費到期：${currentVehicle}`}
+              title={`牌費到期：${plate}`}
               date={licenceDue}
-              filename={`牌費到期-${currentVehicle}`}
-              description={`車輛 ${currentVehicle} 牌費到期日 ${licenceDue}，請續牌。`}
+              filename={`牌費到期-${plate}`}
+              description={`車輛 ${plate} 牌費到期日 ${licenceDue}，請續牌。`}
             />
           )}
         </dd>
